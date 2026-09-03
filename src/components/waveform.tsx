@@ -147,7 +147,7 @@ export function Waveform({
   }
 
   const buttonBase =
-    'grid shrink-0 place-items-center rounded-full text-ink transition active:scale-95 disabled:opacity-50 shadow-[0_6px_0_0_rgba(0,0,0,0.35)] active:translate-y-[3px] active:shadow-[0_2px_0_0_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50'
+    'grid shrink-0 place-items-center rounded-full text-ink transition duration-100 active:scale-95 disabled:opacity-50 shadow-[0_6px_0_0_rgba(0,0,0,0.35)] hover:translate-y-[2px] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.35)] active:translate-y-[4px] active:shadow-[0_2px_0_0_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50'
 
   const playingAt = (target: number) => playing && rate === target
 

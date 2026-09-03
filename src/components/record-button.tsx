@@ -199,7 +199,8 @@ export function RecordButton({
           aria-label={recording ? 'Stop recording' : 'Start recording'}
           className={cn(
             'relative grid size-44 place-items-center rounded-full text-ink transition-transform duration-100',
-            'shadow-[0_10px_0_0_rgba(0,0,0,0.35)] active:translate-y-[4px] active:shadow-[0_4px_0_0_rgba(0,0,0,0.35)]',
+            'shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:translate-y-[3px] hover:shadow-[0_7px_0_0_rgba(0,0,0,0.35)]',
+            'active:translate-y-[6px] active:shadow-[0_4px_0_0_rgba(0,0,0,0.35)]',
             'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60',
             recording && 'animate-pulse-ring',
             (busy || disabled) && 'opacity-60',

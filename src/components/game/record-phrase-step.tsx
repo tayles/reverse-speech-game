@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { Lightbulb, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { PlayerChip } from '@/components/player-chip'
 import { RecordButton, type RecordingResult } from '@/components/record-button'
-import { PHRASE_PACKS } from '@/data/phrases'
+import { PHRASE_IDEAS } from '@/data/phrases'
 import { pickRandom } from '@/lib/utils'
 import type { Player, Settings } from '@/store/game-store'
 
@@ -17,14 +16,19 @@ interface Props {
 }
 
 export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecorded }: Props) {
+  /**
+   * Stays null until it is asked for. A suggestion on screen doubles as the
+   * phrase label when speech recognition comes back empty, so offering one
+   * unprompted would put words in the player's mouth.
+   */
   const [suggestion, setSuggestion] = useState<string | null>(null)
-  const [pack, setPack] = useState(PHRASE_PACKS[0])
 
-  const suggest = (packIndex?: number) => {
-    const chosen = packIndex === undefined ? pack : PHRASE_PACKS[packIndex]
-    setPack(chosen)
-    setSuggestion(pickRandom(chosen.phrases))
-  }
+  const suggest = () =>
+    setSuggestion((current) => {
+      let next = pickRandom(PHRASE_IDEAS)
+      while (PHRASE_IDEAS.length > 1 && next === current) next = pickRandom(PHRASE_IDEAS)
+      return next
+    })
 
   return (
     <div className="space-y-5">
@@ -45,40 +49,18 @@ export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecord
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-4">
-          {suggestion ? (
-            <div className="animate-pop text-center">
-              <p className="text-sm font-extrabold uppercase tracking-widest text-white/40">
-                {pack.emoji} {pack.name}
-              </p>
-              <p className="mt-1 text-3xl font-extrabold text-sun">“{suggestion}”</p>
-              <Button variant="ghost" size="sm" className="mt-2" onClick={() => suggest()}>
-                <RefreshCw /> Another one
-              </Button>
-            </div>
-          ) : (
-            <div className="text-center">
-              <Button variant="soft" size="sm" onClick={() => suggest(0)}>
-                <Lightbulb /> Need an idea?
-              </Button>
-            </div>
-          )}
-
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {PHRASE_PACKS.map((p, i) => (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => suggest(i)}
-                className="rounded-full bg-white/8 px-3 py-1.5 text-sm font-extrabold text-white/70 ring-1 ring-white/12 transition hover:bg-white/16 active:scale-95"
-              >
-                {p.emoji} {p.name}
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-blob bg-white/8 px-4 py-3 text-center ring-1 ring-white/12">
+        <span className="text-lg font-bold text-white/55">Need an idea?</span>
+        {suggestion && (
+          <span key={suggestion} className="animate-pop text-xl font-extrabold text-sun">
+            Try “{suggestion}”
+          </span>
+        )}
+        <Button variant="ghost" size="sm" onClick={suggest}>
+          {suggestion ? <RefreshCw /> : <Lightbulb />}
+          {suggestion ? 'Another one' : 'Give me one'}
+        </Button>
+      </div>
 
       <RecordButton
         maxSeconds={settings.maxRecordSeconds}
