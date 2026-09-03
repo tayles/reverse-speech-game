@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/dialog'
 import { RecordPhraseStep } from '@/components/game/record-phrase-step'
 import { ListenStep } from '@/components/game/listen-step'
-import { AttemptStep } from '@/components/game/attempt-step'
 import { RevealStep } from '@/components/game/reveal-step'
 import { RoundSummary } from '@/components/game/round-summary'
 import { Scoreboard } from '@/components/game/scoreboard'
@@ -24,8 +23,8 @@ import type { RecordingResult } from '@/components/record-button'
 
 type Phase =
   | { kind: 'record-phrase' }
+  /** Hearing the backwards clip and copying it — one page, not two. */
   | { kind: 'listen'; roundId: string }
-  | { kind: 'attempt'; roundId: string; playerId: string }
   | { kind: 'reveal'; roundId: string; attemptId: string }
   | { kind: 'summary'; roundId: string }
 
@@ -48,6 +47,7 @@ function GamePage() {
   const addAttempt = useGameStore((s) => s.addAttempt)
   const scoreAttempt = useGameStore((s) => s.scoreAttempt)
   const deleteAttempt = useGameStore((s) => s.deleteAttempt)
+  const deleteRound = useGameStore((s) => s.deleteRound)
   const finishGame = useGameStore((s) => s.finishGame)
   const reopenGame = useGameStore((s) => s.reopenGame)
 
@@ -164,30 +164,23 @@ function GamePage() {
         />
       )}
 
-      {phase.kind === 'listen' && round && master && turn && (
+      {phase.kind === 'listen' && round && master && turn && turn.current && (
         <ListenStep
           round={round}
           roundNumber={roundNumber}
           master={master}
-          nextPlayer={turn.current}
+          player={turn.current}
           attemptsDone={round.attempts.length}
           attemptsTotal={turn.eligible.length}
           solo={solo}
-          onPhraseChange={(phrase) => updateRoundPhrase(game.id, round.id, phrase)}
-          onReady={() =>
-            turn.current && setPhase({ kind: 'attempt', roundId: round.id, playerId: turn.current.id })
-          }
-        />
-      )}
-
-      {phase.kind === 'attempt' && round && (
-        <AttemptStep
-          round={round}
-          player={game.players.find((p) => p.id === phase.playerId)!}
           settings={settings}
-          solo={solo}
-          onBack={() => setPhase({ kind: 'listen', roundId: round.id })}
-          onRecorded={(result) => handleAttemptRecorded(result, phase.playerId, round.id)}
+          canRerecord={round.attempts.length === 0}
+          onPhraseChange={(phrase) => updateRoundPhrase(game.id, round.id, phrase)}
+          onRerecord={() => {
+            void deleteRound(game.id, round.id)
+            setPhase({ kind: 'record-phrase' })
+          }}
+          onRecorded={(result) => handleAttemptRecorded(result, turn.current!.id, round.id)}
         />
       )}
 
@@ -201,7 +194,7 @@ function GamePage() {
           onScore={(patch) => scoreAttempt(game.id, round.id, attempt.id, patch)}
           onRetry={() => {
             void deleteAttempt(game.id, round.id, attempt.id)
-            setPhase({ kind: 'attempt', roundId: round.id, playerId: attempt.playerId })
+            setPhase({ kind: 'listen', roundId: round.id })
           }}
           onNext={advanceFromReveal}
         />

@@ -76,6 +76,25 @@ body {
 /* Kid-friendly: never select text accidentally when tapping fast */
 button, .no-select { user-select: none; -webkit-user-select: none; }
 
+/*
+ * Tailwind v4 resets buttons to the default arrow cursor. Put the pointer back
+ * on everything clickable, so nothing in the game looks inert on a trackpad.
+ */
+button:not(:disabled),
+summary,
+label[for],
+[role="button"]:not([aria-disabled="true"]),
+[role="radio"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

@@ -26,13 +26,15 @@ bun run test      # unit tests
 
 1. **Record** — the phrase master says something short and clear. Speech
    recognition writes down what it heard, and it can be corrected by tapping it.
-2. **Listen** — everyone hears the clip forwards and backwards. Every clip has a
-   play button and a snail button beside it, so any of them can be replayed at
-   slow speed as many times as you like.
-3. **Copy** — each other player records their best impression of the gibberish.
-4. **Reveal** — that attempt is played *backwards*, which should sound like the
+2. **Listen and copy** — one page. The backwards clip plays the moment it opens,
+   and the mic is right below it, so there is nothing between hearing the sound
+   and having a go. Every clip has a play button and a snail button beside it,
+   and tapping anywhere on a waveform plays from that point, so a tricky bit can
+   be worried at as many times as you like. If the phrase came out wrong, the
+   master can re-record it until somebody has taken their turn.
+3. **Reveal** — that attempt is played *backwards*, which should sound like the
    original phrase. Everyone scores it out of five stars.
-5. **Score** — the attempt is automatically compared with the original by sound
+4. **Score** — the attempt is automatically compared with the original by sound
    and given a match percentage, alongside 20 points per star from the room and
    10 for hosting the round. The phrase master rotates each round.
 
