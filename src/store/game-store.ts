@@ -161,7 +161,10 @@ export const useGameStore = create<GameState>()(
       async deleteGame(gameId) {
         const game = get().games[gameId]
         if (!game) return
-        const audioIds = game.rounds.flatMap((r) => [r.audioId, ...r.attempts.map((a) => a.audioId)])
+        const audioIds = game.rounds.flatMap((r) => [
+          r.audioId,
+          ...r.attempts.map((a) => a.audioId),
+        ])
         set((s) => {
           const games = { ...s.games }
           delete games[gameId]

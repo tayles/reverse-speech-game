@@ -11,10 +11,26 @@ import { unlockAudio } from '@/lib/audio'
 import micBadge from '@/assets/mic-badge.png'
 
 const STEPS = [
-  { emoji: '🎤', title: 'Say a phrase', body: 'Record anything — “wobbly jelly”, your name, a tongue twister.' },
-  { emoji: '🔁', title: 'Hear it backwards', body: 'The app flips your voice around. It sounds like alien gibberish!' },
-  { emoji: '🗣️', title: 'Copy the gibberish', body: 'Record yourself copying it, then we flip yours back.' },
-  { emoji: '🏆', title: 'Did it work?', body: 'If you nailed it, your backwards voice says the phrase!' },
+  {
+    emoji: '🎤',
+    title: 'Say a phrase',
+    body: 'Record anything — “wobbly jelly”, your name, a tongue twister.',
+  },
+  {
+    emoji: '🔁',
+    title: 'Hear it backwards',
+    body: 'The app flips your voice around. It sounds like alien gibberish!',
+  },
+  {
+    emoji: '🗣️',
+    title: 'Copy the gibberish',
+    body: 'Record yourself copying it, then we flip yours back.',
+  },
+  {
+    emoji: '🏆',
+    title: 'Did it work?',
+    body: 'If you nailed it, your backwards voice says the phrase!',
+  },
 ]
 
 function HomePage() {
@@ -24,7 +40,10 @@ function HomePage() {
   const createGame = useGameStore((s) => s.createGame)
   const deleteGame = useGameStore((s) => s.deleteGame)
 
-  const recent = gameOrder.map((id) => games[id]).filter(Boolean).slice(0, 6)
+  const recent = gameOrder
+    .map((id) => games[id])
+    .filter(Boolean)
+    .slice(0, 6)
   const active = recent.find((g) => g.status === 'active' && g.rounds.length > 0)
 
   const startSolo = async () => {
@@ -45,8 +64,8 @@ function HomePage() {
           Can you talk backwards?
         </h1>
         <p className="mx-auto mt-3 max-w-md text-lg font-bold text-white/70">
-          Record a phrase, listen to it in reverse, then try to copy the reversed sound.
-          Flip your voice back and see if it matches!
+          Record a phrase, listen to it in reverse, then try to copy the reversed sound. Flip your
+          voice back and see if it matches!
         </p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -88,7 +107,10 @@ function HomePage() {
           {STEPS.map((step, i) => (
             <Card key={step.title}>
               <CardContent className="flex items-start gap-4 p-5">
-                <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/10 text-3xl" aria-hidden="true">
+                <span
+                  className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/10 text-3xl"
+                  aria-hidden="true"
+                >
                   {step.emoji}
                 </span>
                 <div>
@@ -118,18 +140,24 @@ function HomePage() {
                       params={{ gameId: game.id }}
                       className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
                     >
-                      <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-2xl" aria-hidden="true">
+                      <span
+                        className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-2xl"
+                        aria-hidden="true"
+                      >
                         {game.mode === 'solo' ? '🧑' : '🎉'}
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-lg font-extrabold">
                           {game.name}
                           {game.status === 'finished' && (
-                            <span className="ml-2 align-middle text-sm font-bold text-white/40">finished</span>
+                            <span className="ml-2 align-middle text-sm font-bold text-white/40">
+                              finished
+                            </span>
                           )}
                         </span>
                         <span className="block truncate text-sm font-bold text-white/50">
-                          {game.rounds.length} round{game.rounds.length === 1 ? '' : 's'} · {formatDate(game.updatedAt)}
+                          {game.rounds.length} round{game.rounds.length === 1 ? '' : 's'} ·{' '}
+                          {formatDate(game.updatedAt)}
                           {winner && winner.points > 0 && (
                             <>
                               {' · '}

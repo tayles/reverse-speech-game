@@ -91,9 +91,13 @@ export function RevealStep({
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <p className="text-5xl" aria-hidden="true">🔍</p>
+        <p className="text-5xl" aria-hidden="true">
+          🔍
+        </p>
         <h2 className="mt-1 text-3xl font-extrabold tracking-tight">
-          {solo ? 'Now flip it back around…' : `Now let's flip ${possessive(player.name)} go around…`}
+          {solo
+            ? 'Now flip it back around…'
+            : `Now let's flip ${possessive(player.name)} go around…`}
         </h2>
         <p className="mt-1 text-lg font-bold text-white/60">
           If it worked, you&apos;ll hear “{round.phrase || 'the phrase'}”

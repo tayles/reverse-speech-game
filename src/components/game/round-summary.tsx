@@ -7,7 +7,14 @@ import { PlayerChip } from '@/components/player-chip'
 import { Scoreboard } from './scoreboard'
 import { useClip } from '@/components/use-clip'
 import { cn } from '@/lib/utils'
-import { attemptsBy, bestAttempt, type Attempt, type Game, type Player, type Round } from '@/store/game-store'
+import {
+  attemptsBy,
+  bestAttempt,
+  type Attempt,
+  type Game,
+  type Player,
+  type Round,
+} from '@/store/game-store'
 
 function AttemptRow({
   attempt,
@@ -93,7 +100,9 @@ export function RoundSummary({ game, round, roundNumber, onNextRound, onFinish }
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <p className="text-6xl" aria-hidden="true">🎊</p>
+        <p className="text-6xl" aria-hidden="true">
+          🎊
+        </p>
         <h2 className="mt-1 text-3xl font-extrabold tracking-tight">Round {roundNumber} done!</h2>
         {bestPlayer && best.points > 0 && (
           <p className="mt-1 text-lg font-bold text-white/60">
@@ -103,8 +112,8 @@ export function RoundSummary({ game, round, roundNumber, onNextRound, onFinish }
               </>
             ) : (
               <>
-                {bestPlayer.emoji} <span className="text-sun">{bestPlayer.name}</span> nailed it best
-                with {best.points} points.
+                {bestPlayer.emoji} <span className="text-sun">{bestPlayer.name}</span> nailed it
+                best with {best.points} points.
               </>
             )}
           </p>
@@ -120,7 +129,12 @@ export function RoundSummary({ game, round, roundNumber, onNextRound, onFinish }
             {master && !solo && <PlayerChip player={master} size="sm" showName={false} />}
           </div>
           {!original.loading && original.forwardUrl && (
-            <Waveform url={original.forwardUrl} colour="var(--color-sky)" height={44} label="Original" />
+            <Waveform
+              url={original.forwardUrl}
+              colour="var(--color-sky)"
+              height={44}
+              label="Original"
+            />
           )}
         </CardContent>
       </Card>
@@ -128,7 +142,8 @@ export function RoundSummary({ game, round, roundNumber, onNextRound, onFinish }
       <Card>
         <CardContent className="space-y-3 p-5">
           <p className="flex items-center gap-2 text-xl font-extrabold">
-            <Mic className="size-5" /> {solo ? 'Your go, flipped back' : "Everyone's go, flipped back"}
+            <Mic className="size-5" />{' '}
+            {solo ? 'Your go, flipped back' : "Everyone's go, flipped back"}
           </p>
           {round.attempts.length === 0 ? (
             <p className="text-base font-bold text-white/45">Nobody had a turn this round.</p>

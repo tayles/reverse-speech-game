@@ -1,7 +1,7 @@
 # 🔁 Backwards Brain
 
 A silly speech game for kids. Record a phrase, listen to it played backwards,
-then try to copy the backwards sound. Flip *your* recording around — if you got
+then try to copy the backwards sound. Flip _your_ recording around — if you got
 it right, your gibberish turns back into the original phrase.
 
 Play solo, or pass the device around with up to eight players. Setting up is one
@@ -34,7 +34,7 @@ bun run test      # unit tests
    and tapping anywhere on a waveform plays from that point, so a tricky bit can
    be worried at as many times as you like. If the phrase came out wrong, the
    master can re-record it until somebody has taken their turn.
-3. **Reveal** — that attempt is played *backwards*, which should sound like the
+3. **Reveal** — that attempt is played _backwards_, which should sound like the
    original phrase, and is scored against it automatically. Nobody has to judge
    anything.
 4. **Try again, as often as you like** — every go is kept, with its recording
@@ -82,7 +82,7 @@ transcription entirely. The pipeline is the standard one for this job:
 Frames too quiet to carry spectral shape are dropped first, and a clip with no
 usable frames is reported as such rather than being given a made-up score.
 
-It is comparing *sounds*, not meaning: a good impression of the right rhythm
+It is comparing _sounds_, not meaning: a good impression of the right rhythm
 and vowels scores well, and two different speakers will never score as highly
 as the same person twice. That is the right shape for the game — you are being
 marked on your impression.
@@ -106,11 +106,11 @@ Add it to your home screen and it works on a plane.
 
 ## Browser support
 
-| Feature | Chrome / Edge | Safari | Firefox |
-| --- | --- | --- | --- |
-| Recording + reversing | ✅ | ✅ | ✅ |
-| Automatic sound-match scoring | ✅ | ✅ | ✅ |
-| Speech labels for phrases | ✅ | ✅ | ❌ (type phrases instead) |
+| Feature                       | Chrome / Edge | Safari | Firefox                   |
+| ----------------------------- | ------------- | ------ | ------------------------- |
+| Recording + reversing         | ✅            | ✅     | ✅                        |
+| Automatic sound-match scoring | ✅            | ✅     | ✅                        |
+| Speech labels for phrases     | ✅            | ✅     | ❌ (type phrases instead) |
 
 Everything degrades gracefully: with no speech recognition you type the phrase.
 Automatic scoring needs no speech recognition at all, so it works everywhere.

@@ -7,7 +7,9 @@ import { useGameStore } from '@/store/game-store'
 import micBadge from '@/assets/mic-badge.png'
 
 function useOnline() {
-  const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine))
+  const [online, setOnline] = useState(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine,
+  )
   useEffect(() => {
     const on = () => setOnline(true)
     const off = () => setOnline(false)
@@ -42,7 +44,10 @@ function RootLayout() {
     <div className="flex min-h-[100svh] flex-col">
       <header className="safe-top sticky top-0 z-30 border-b border-white/8 bg-[oklch(0.16_0.045_292/0.75)] px-4 pb-3 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-          <Link to="/" className="flex items-center gap-2.5 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+          >
             <img src={micBadge} alt="" className="h-11 w-auto shrink-0 drop-shadow-lg" />
             <span className="leading-none">
               <span className="block whitespace-nowrap text-lg font-extrabold tracking-tight sm:text-xl">

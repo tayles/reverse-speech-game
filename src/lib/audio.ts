@@ -7,7 +7,9 @@ let ctx: AudioContext | null = null
 
 export function getAudioContext(): AudioContext {
   if (!ctx || ctx.state === 'closed') {
-    const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const Ctor =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
     ctx = new Ctor()
   }
   return ctx
@@ -131,7 +133,7 @@ export function findContentBounds(
     let crossings = 0
     for (let i = start; i < end; i++) {
       sum += detect[i] * detect[i]
-      if (i > start && (detect[i] < 0) !== (detect[i - 1] < 0)) crossings++
+      if (i > start && detect[i] < 0 !== detect[i - 1] < 0) crossings++
     }
     const width = Math.max(1, end - start)
     rms[f] = Math.sqrt(sum / width)

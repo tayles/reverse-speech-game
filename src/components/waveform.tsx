@@ -203,7 +203,9 @@ export function Waveform({
       <div className="min-w-0 flex-1">
         {(label || sublabel) && (
           <div className="mb-1 flex items-baseline justify-between gap-3">
-            {label && <span className="truncate text-base font-extrabold text-white/85">{label}</span>}
+            {label && (
+              <span className="truncate text-base font-extrabold text-white/85">{label}</span>
+            )}
             <span className="shrink-0 text-sm font-bold tabular-nums text-white/45">
               {sublabel ?? (duration ? formatDuration(duration) : '')}
             </span>

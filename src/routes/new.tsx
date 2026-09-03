@@ -97,7 +97,9 @@ function NewGamePage() {
   return (
     <div className="space-y-6 pb-10">
       <div className="text-center">
-        <p className="text-6xl" aria-hidden="true">🎉</p>
+        <p className="text-6xl" aria-hidden="true">
+          🎉
+        </p>
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight">How many players?</h1>
         <p className="mt-1 text-lg font-bold text-white/60">
           {count === 1
@@ -243,7 +245,6 @@ function NewGamePage() {
               {editing ? <Check /> : <Pencil />}
             </Button>
           </div>
-
         </CardContent>
       </Card>
 

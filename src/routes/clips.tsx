@@ -36,11 +36,17 @@ function RoundCard({ game, round, index }: { game: Game; round: Round; index: nu
               “{round.phrase || 'unlabelled clip'}”
             </span>
             <span className="block truncate text-sm font-bold text-white/45">
-              {master ? `${master.emoji} ${master.name}` : 'unknown'} · {formatDuration(round.duration)} ·{' '}
-              {round.attempts.length} attempt{round.attempts.length === 1 ? '' : 's'} · {formatDate(round.createdAt)}
+              {master ? `${master.emoji} ${master.name}` : 'unknown'} ·{' '}
+              {formatDuration(round.duration)} · {round.attempts.length} attempt
+              {round.attempts.length === 1 ? '' : 's'} · {formatDate(round.createdAt)}
             </span>
           </span>
-          <ChevronDown className={cn('size-6 shrink-0 text-white/40 transition-transform', open && 'rotate-180')} />
+          <ChevronDown
+            className={cn(
+              'size-6 shrink-0 text-white/40 transition-transform',
+              open && 'rotate-180',
+            )}
+          />
         </button>
 
         {open && (
@@ -52,10 +58,20 @@ function RoundCard({ game, round, index }: { game: Game; round: Round; index: nu
             ) : (
               <>
                 {clip.forwardUrl && (
-                  <Waveform url={clip.forwardUrl} colour="var(--color-sky)" height={48} label="Original" />
+                  <Waveform
+                    url={clip.forwardUrl}
+                    colour="var(--color-sky)"
+                    height={48}
+                    label="Original"
+                  />
                 )}
                 {clip.reversedUrl && (
-                  <Waveform url={clip.reversedUrl} colour="var(--color-bubble)" height={48} label="Backwards" />
+                  <Waveform
+                    url={clip.reversedUrl}
+                    colour="var(--color-bubble)"
+                    height={48}
+                    label="Backwards"
+                  />
                 )}
               </>
             )}
@@ -106,7 +122,8 @@ function AttemptCard({
     <div className="space-y-2 rounded-2xl bg-white/5 p-3">
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-2 text-base font-extrabold">
-          <span aria-hidden="true">{emoji}</span> {playerName} <span className="text-white/40">flipped back</span>
+          <span aria-hidden="true">{emoji}</span> {playerName}{' '}
+          <span className="text-white/40">flipped back</span>
         </span>
         <Badge variant={points >= 60 ? 'good' : 'default'}>
           {similarity === undefined ? 'no match' : `${points}%`}
@@ -136,7 +153,9 @@ function ClipsPage() {
   if (withRounds.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-6xl" aria-hidden="true">📼</p>
+        <p className="text-6xl" aria-hidden="true">
+          📼
+        </p>
         <h1 className="mt-3 text-3xl font-extrabold">No clips yet</h1>
         <p className="mt-1 text-lg font-bold text-white/55">
           Record your first phrase and it will show up here.

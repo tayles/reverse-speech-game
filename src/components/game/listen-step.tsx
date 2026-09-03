@@ -117,7 +117,12 @@ export function ListenStep({
           )}
 
           {!loading && forwardUrl && (
-            <Waveform url={forwardUrl} colour="var(--color-sky)" label="The real phrase" height={56} />
+            <Waveform
+              url={forwardUrl}
+              colour="var(--color-sky)"
+              label="The real phrase"
+              height={56}
+            />
           )}
         </CardContent>
       </Card>

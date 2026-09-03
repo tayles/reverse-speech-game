@@ -65,7 +65,9 @@ function GamePage() {
     return game.rounds.find((r) => r.id === phase.roundId)
   }, [game, phase])
 
-  const roundNumber = round ? game.rounds.findIndex((r) => r.id === round.id) + 1 : (game?.rounds.length ?? 0) + 1
+  const roundNumber = round
+    ? game.rounds.findIndex((r) => r.id === round.id) + 1
+    : (game?.rounds.length ?? 0) + 1
 
   const master = useMemo(() => {
     if (!game) return undefined
@@ -147,7 +149,12 @@ function GamePage() {
   return (
     <div className="pb-12">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <Button variant="ghost" size="iconSm" aria-label="Leave game" onClick={() => setConfirmExit(true)}>
+        <Button
+          variant="ghost"
+          size="iconSm"
+          aria-label="Leave game"
+          onClick={() => setConfirmExit(true)}
+        >
           <X />
         </Button>
         <div className="text-center">
@@ -158,7 +165,12 @@ function GamePage() {
             {game.players.map((p) => p.emoji).join(' ')}
           </p>
         </div>
-        <Button variant="ghost" size="iconSm" aria-label="Scores" onClick={() => setShowScores(true)}>
+        <Button
+          variant="ghost"
+          size="iconSm"
+          aria-label="Scores"
+          onClick={() => setShowScores(true)}
+        >
           <Trophy />
         </Button>
       </div>
@@ -230,7 +242,8 @@ function GamePage() {
           <DialogHeader>
             <DialogTitle>Scores</DialogTitle>
             <DialogDescription>
-              20 points per star, plus bonus points for auto-matched phrases and 10 for hosting a round.
+              20 points per star, plus bonus points for auto-matched phrases and 10 for hosting a
+              round.
             </DialogDescription>
           </DialogHeader>
           <Scoreboard game={game} compact />

@@ -16,7 +16,11 @@ export function Scoreboard({ game, compact = false }: { game: Game; compact?: bo
     return (
       <Card>
         <CardContent className="flex items-center justify-between gap-4 p-5">
-          <PlayerChip player={row.player} size="lg" subtitle={plural(row.attempts, 'try', 'tries')} />
+          <PlayerChip
+            player={row.player}
+            size="lg"
+            subtitle={plural(row.attempts, 'try', 'tries')}
+          />
           <div className="text-right">
             <p className="text-4xl font-extrabold tabular-nums text-sun">{row.points}</p>
             <p className="text-sm font-bold text-white/45">points</p>
