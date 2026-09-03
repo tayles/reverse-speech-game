@@ -19,12 +19,15 @@ export interface Attempt {
   /** Key into IndexedDB — holds both the attempt and its reversed version. */
   audioId: string
   duration: number
-  /** What the robot judge heard when the attempt was played backwards. */
-  robotHeard?: string
-  /** What the player typed/said they thought the backwards clip meant. */
+  /**
+   * 0-100 acoustic similarity between the original phrase and this attempt
+   * played backwards. Computed automatically, with no transcription involved.
+   */
+  similarity?: number
+  /** What a player typed as their reading of the backwards clip. */
   guess?: string
-  /** 0-100, from the robot judge or the typed guess. */
-  autoScore?: number
+  /** 0-100 text similarity between that guess and the phrase. */
+  guessScore?: number
   /** 0-5, awarded by the humans in the room. */
   stars: number
   points: number
@@ -63,8 +66,6 @@ export interface Settings {
   autoClean: boolean
   /** Try to auto-label recordings with the Web Speech API. */
   speechLabels: boolean
-  /** Play the reversed attempt aloud and let speech recognition grade it. */
-  robotJudge: boolean
   /** Everyone including the phrase master takes a turn. */
   masterAlsoAttempts: boolean
   maxRecordSeconds: number
@@ -101,7 +102,7 @@ interface GameState {
     gameId: string,
     roundId: string,
     attemptId: string,
-    patch: Partial<Pick<Attempt, 'stars' | 'autoScore' | 'robotHeard' | 'guess'>>,
+    patch: Partial<Pick<Attempt, 'stars' | 'similarity' | 'guess' | 'guessScore'>>,
   ) => void
   deleteAttempt: (gameId: string, roundId: string, attemptId: string) => Promise<void>
 
@@ -109,11 +110,22 @@ interface GameState {
   cleanupOrphanAudio: () => Promise<number>
 }
 
-export function computePoints(attempt: Pick<Attempt, 'stars' | 'autoScore'>): number {
+/**
+ * Stars carry the room's judgement, the automatic signals carry the machine's.
+ * When both exist they weigh equally; when only one does it stands alone, so a
+ * round is never penalised for a score nobody gave.
+ */
+export function computePoints(
+  attempt: Pick<Attempt, 'stars' | 'similarity' | 'guessScore'>,
+): number {
+  const signals = [attempt.similarity, attempt.guessScore].filter(
+    (value): value is number => value !== undefined,
+  )
   const starPoints = attempt.stars * 20
-  if (attempt.autoScore === undefined) return starPoints
-  if (attempt.stars === 0) return attempt.autoScore
-  return Math.round((starPoints + attempt.autoScore) / 2)
+  if (signals.length === 0) return starPoints
+  const auto = Math.round(signals.reduce((a, b) => a + b, 0) / signals.length)
+  if (attempt.stars === 0) return auto
+  return Math.round((starPoints + auto) / 2)
 }
 
 const MASTER_BONUS = 10
@@ -121,7 +133,6 @@ const MASTER_BONUS = 10
 export const DEFAULT_SETTINGS: Settings = {
   autoClean: true,
   speechLabels: true,
-  robotJudge: false,
   masterAlsoAttempts: false,
   maxRecordSeconds: 8,
   lang: typeof navigator === 'undefined' ? 'en-GB' : navigator.language || 'en-GB',
@@ -321,7 +332,7 @@ export const useGameStore = create<GameState>()(
             ...attempt,
             id,
             stars,
-            points: computePoints({ stars, autoScore: attempt.autoScore }),
+            points: computePoints({ stars, similarity: attempt.similarity }),
             createdAt: Date.now(),
           }
           return {

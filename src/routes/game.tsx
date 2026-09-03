@@ -196,7 +196,6 @@ function GamePage() {
           round={round}
           attempt={attempt}
           player={attemptPlayer}
-          settings={settings}
           solo={solo}
           isLastAttempt={turn.remaining.length === 0}
           onScore={(patch) => scoreAttempt(game.id, round.id, attempt.id, patch)}

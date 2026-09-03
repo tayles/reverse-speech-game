@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createRoute } from '@tanstack/react-router'
-import { Bot, HardDrive, Mic, Scissors, Sparkles, Vibrate, Trash2, Download, WifiOff } from 'lucide-react'
+import { HardDrive, Mic, Scissors, Sparkles, Vibrate, Trash2, Download, WifiOff } from 'lucide-react'
 import { Route as rootRoute } from './__root'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -35,7 +35,7 @@ function SettingRow({
   disabled,
   note,
 }: {
-  icon: typeof Bot
+  icon: typeof Mic
   title: string
   description: string
   checked: boolean
@@ -122,15 +122,6 @@ function SettingsPage() {
             onChange={(speechLabels) => updateSettings({ speechLabels })}
             disabled={!speechOk}
             note={speechOk ? undefined : 'Not available in this browser — you can type phrases instead.'}
-          />
-          <SettingRow
-            icon={Bot}
-            title="Robot judge"
-            description="Play a flipped-back attempt out loud and let the computer guess what it said."
-            checked={settings.robotJudge}
-            onChange={(robotJudge) => updateSettings({ robotJudge })}
-            disabled={!speechOk}
-            note="Experimental — needs the volume up and a quiet room."
           />
           <SettingRow
             icon={Mic}
