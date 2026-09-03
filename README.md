@@ -5,7 +5,8 @@ then try to copy the backwards sound. Flip *your* recording around — if you go
 it right, your gibberish turns back into the original phrase.
 
 Play solo, or pass the device around with up to eight players. Setting up is one
-slider and nothing else — names, avatars and colours are handed out by seat.
+slider; avatars and colours are handed out by seat, and names can be typed in if
+"Player 3" won't do.
 
 ## Quick start
 
