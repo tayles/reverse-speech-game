@@ -28,9 +28,10 @@ function AttemptRow({ attempt, game }: { attempt: Attempt; game: Game }) {
       {!loading && reversedUrl && (
         <Waveform url={reversedUrl} colour={player.colour} height={40} showPlayButton />
       )}
-      {(attempt.robotHeard || attempt.guess) && (
+      {attempt.similarity !== undefined && (
         <p className="text-sm font-bold text-white/45">
-          heard: “{attempt.robotHeard || attempt.guess}”
+          {attempt.similarity}% sound match
+          {attempt.guess ? ` · heard “${attempt.guess}”` : ''}
         </p>
       )}
     </div>

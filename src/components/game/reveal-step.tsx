@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Bot, Keyboard, Loader2, RotateCcw, Trash2 } from 'lucide-react'
+import { ArrowRight, AudioLines, Keyboard, Loader2, RotateCcw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,20 +9,19 @@ import { Waveform } from '@/components/waveform'
 import { PlayerChip } from '@/components/player-chip'
 import { StarRating } from '@/components/star-rating'
 import { useClip } from '@/components/use-clip'
-import { robotJudge } from '@/lib/judge'
-import { isSpeechRecognitionSupported } from '@/lib/speech'
+import { compareSignals } from '@/lib/acoustic'
+import { decodeBlob } from '@/lib/audio'
 import { comparePhrases, scoreBand } from '@/lib/similarity'
 import { cn, possessive } from '@/lib/utils'
-import type { Attempt, Player, Round, Settings } from '@/store/game-store'
+import type { Attempt, Player, Round } from '@/store/game-store'
 
 interface Props {
   round: Round
   attempt: Attempt
   player: Player
-  settings: Settings
   solo: boolean
   isLastAttempt: boolean
-  onScore: (patch: Partial<Pick<Attempt, 'stars' | 'autoScore' | 'robotHeard' | 'guess'>>) => void
+  onScore: (patch: Partial<Pick<Attempt, 'stars' | 'similarity' | 'guess' | 'guessScore'>>) => void
   onRetry: () => void
   onNext: () => void
 }
@@ -31,7 +30,6 @@ export function RevealStep({
   round,
   attempt,
   player,
-  settings,
   solo,
   isLastAttempt,
   onScore,
@@ -40,43 +38,63 @@ export function RevealStep({
 }: Props) {
   const original = useClip(round.audioId)
   const mine = useClip(attempt.audioId)
-  const [judging, setJudging] = useState(false)
-  const [live, setLive] = useState('')
+  const [unusable, setUnusable] = useState(false)
   const [showGuess, setShowGuess] = useState(false)
   const [guess, setGuess] = useState(attempt.guess ?? '')
-  const abortRef = useRef<AbortController | null>(null)
+  const scoreRef = useRef(onScore)
+  useEffect(() => {
+    scoreRef.current = onScore
+  })
 
-  useEffect(() => () => abortRef.current?.abort(), [])
+  const similarity = attempt.similarity
+  const band = similarity === undefined ? null : scoreBand(similarity)
+  const ready = !!original.clip && !!mine.clip
+  const comparing = similarity === undefined && !unusable && ready
 
-  const canRobot = settings.robotJudge && isSpeechRecognitionSupported() && !!round.phrase
-  const match = attempt.autoScore === undefined ? null : attempt.autoScore
-  const band = match === null ? null : scoreBand(match)
+  /**
+   * Score the attempt by comparing how it *sounds* to the original phrase.
+   * Nothing to press: the answer is already in the two clips, and a stored
+   * clip cannot be transcribed in the browser anyway.
+   */
+  useEffect(() => {
+    if (similarity !== undefined || !original.clip || !mine.clip) return
+    let live = true
 
-  const runRobot = async () => {
-    if (!mine.reversedUrl || !round.phrase) return
-    setJudging(true)
-    setLive('')
-    abortRef.current = new AbortController()
-    const verdict = await robotJudge(mine.reversedUrl, {
-      lang: settings.lang,
-      onPartial: setLive,
-      signal: abortRef.current.signal,
-    })
-    setJudging(false)
-    const heard = verdict.heard
-    const result = comparePhrases(round.phrase, heard)
-    onScore({ robotHeard: heard, autoScore: heard ? result.score : 0 })
-  }
+    // Yield first, so the reveal audio starts playing before we block on maths.
+    const timer = setTimeout(async () => {
+      try {
+        const [phrase, flipped] = await Promise.all([
+          decodeBlob(original.clip!.wav),
+          decodeBlob(mine.clip!.reversedWav),
+        ])
+        if (!live) return
+        const result = compareSignals(
+          phrase.getChannelData(0),
+          flipped.getChannelData(0),
+          phrase.sampleRate,
+        )
+        if (!live) return
+        if (result.usable) scoreRef.current({ similarity: result.score })
+        else setUnusable(true)
+      } catch {
+        if (live) setUnusable(true)
+      }
+    }, 400)
+
+    return () => {
+      live = false
+      clearTimeout(timer)
+    }
+  }, [similarity, original.clip, mine.clip])
 
   const submitGuess = () => {
     const text = guess.trim()
     if (!text || !round.phrase) return
-    const result = comparePhrases(round.phrase, text)
-    onScore({ guess: text, autoScore: result.score })
+    onScore({ guess: text, guessScore: comparePhrases(round.phrase, text).score })
   }
 
-  const detail = attempt.robotHeard ?? attempt.guess ?? ''
-  const words = round.phrase && detail ? comparePhrases(round.phrase, detail) : null
+  const words =
+    round.phrase && attempt.guess ? comparePhrases(round.phrase, attempt.guess) : null
 
   return (
     <div className="space-y-5">
@@ -138,50 +156,59 @@ export function RevealStep({
             onChange={(stars) => onScore({ stars })}
           />
 
-          {(round.phrase || match !== null) && (
-            <div className="space-y-3 border-t border-white/10 pt-4">
-              {match !== null && band && (
-                <div className="animate-pop space-y-2 text-center">
-                  <p className={cn('text-3xl font-extrabold', band.tone)}>
-                    {band.emoji} {band.label}
-                  </p>
-                  <Progress
-                    value={match}
-                    indicatorClassName={match >= 70 ? 'bg-lime' : match >= 40 ? 'bg-sun' : 'bg-tang'}
-                  />
-                  <p className="text-lg font-extrabold tabular-nums text-white/70">{match}% match</p>
-                  {detail && (
-                    <p className="text-base font-bold text-white/50">
-                      {attempt.robotHeard ? 'Robot heard' : 'You heard'}: “{detail}”
-                    </p>
-                  )}
-                  {words && words.matchedWords.length > 0 && (
-                    <p className="text-base font-bold text-lime">
-                      Got: {words.matchedWords.join(', ')}
-                    </p>
-                  )}
-                </div>
-              )}
+          <div className="space-y-3 border-t border-white/10 pt-4">
+            {comparing && (
+              <p className="flex items-center justify-center gap-2 text-lg font-extrabold text-white/55">
+                <Loader2 className="size-5 animate-spin" /> Comparing the sounds…
+              </p>
+            )}
 
-              <div className="flex flex-wrap justify-center gap-2">
-                {canRobot && (
-                  <Button variant="sky" size="sm" onClick={() => void runRobot()} disabled={judging}>
-                    {judging ? <Loader2 className="animate-spin" /> : <Bot />}
-                    {judging ? 'Listening…' : match === null ? 'Ask the robot' : 'Ask again'}
-                  </Button>
-                )}
-                {round.phrase && !showGuess && (
-                  <Button variant="soft" size="sm" onClick={() => setShowGuess(true)}>
-                    <Keyboard /> Type what you heard
-                  </Button>
+            {similarity !== undefined && band && (
+              <div className="animate-pop space-y-2 text-center">
+                <p className="flex items-center justify-center gap-1.5 text-sm font-extrabold uppercase tracking-widest text-white/35">
+                  <AudioLines className="size-4" /> Sound match
+                </p>
+                <p className={cn('text-3xl font-extrabold', band.tone)}>
+                  {band.emoji} {band.label}
+                </p>
+                <Progress
+                  value={similarity}
+                  indicatorClassName={
+                    similarity >= 70 ? 'bg-lime' : similarity >= 40 ? 'bg-sun' : 'bg-tang'
+                  }
+                />
+                <p className="text-lg font-extrabold tabular-nums text-white/70">
+                  {similarity}% like the original
+                </p>
+              </div>
+            )}
+
+            {unusable && (
+              <p className="text-center text-base font-bold text-sun">
+                That one was too quiet to compare — the stars are all yours to give.
+              </p>
+            )}
+
+            {attempt.guess && (
+              <div className="space-y-1 text-center">
+                <p className="text-base font-bold text-white/50">
+                  You heard: “{attempt.guess}” ({attempt.guessScore}% of the words)
+                </p>
+                {words && words.matchedWords.length > 0 && (
+                  <p className="text-base font-bold text-lime">
+                    Got: {words.matchedWords.join(', ')}
+                  </p>
                 )}
               </div>
+            )}
 
-              {judging && (
-                <p className="text-center text-base font-bold text-white/50">
-                  Turn the volume up! {live && `“${live}”`}
-                </p>
-              )}
+            {round.phrase && !showGuess && (
+              <div className="flex justify-center">
+                <Button variant="soft" size="sm" onClick={() => setShowGuess(true)}>
+                  <Keyboard /> Type what you heard
+                </Button>
+              </div>
+            )}
 
               {showGuess && round.phrase && (
                 <div className="flex gap-2">
@@ -198,8 +225,7 @@ export function RevealStep({
                   </Button>
                 </div>
               )}
-            </div>
-          )}
+          </div>
 
           <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
             <span className="text-lg font-extrabold text-white/60">
@@ -220,7 +246,7 @@ export function RevealStep({
 
       {!round.phrase && (
         <p className="flex items-center justify-center gap-2 text-center text-base font-bold text-white/40">
-          <RotateCcw className="size-4" /> Add the phrase on the listen screen to unlock auto-scoring.
+          <RotateCcw className="size-4" /> Add the phrase on the listen screen to also guess it in words.
         </p>
       )}
     </div>

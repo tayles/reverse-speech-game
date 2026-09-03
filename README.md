@@ -32,9 +32,9 @@ bun run test      # unit tests
 3. **Copy** — each other player records their best impression of the gibberish.
 4. **Reveal** — that attempt is played *backwards*, which should sound like the
    original phrase. Everyone scores it out of five stars.
-5. **Score** — 20 points per star, 10 for hosting the round, plus an automatic
-   match percentage whenever a phrase has been labelled. The phrase master
-   rotates each round.
+5. **Score** — the attempt is automatically compared with the original by sound
+   and given a match percentage, alongside 20 points per star from the room and
+   10 for hosting the round. The phrase master rotates each round.
 
 ### Tidying up recordings
 
@@ -56,16 +56,35 @@ Turn it off and clips are stored exactly as captured.
 
 ### Scoring an attempt automatically
 
-Two optional routes to a match percentage, both compared against the round's
-phrase with a blend of edit distance and per-word recall:
+The flipped-back attempt should say the same thing as the original phrase, so
+the reveal screen scores it by comparing the two **as audio**. Nothing to press
+and nothing to type — the answer is already in the two clips.
 
-- **Type what you heard** — someone listens to the flipped-back attempt and
-  types it in. Works everywhere.
-- **Robot judge** (off by default, in Setup) — plays the flipped-back attempt
-  out loud and lets the Web Speech API try to transcribe it. The Web Speech API
-  only listens to the live microphone, so this goes through the speakers and
-  back: it needs the volume up and a quiet room, and echo cancellation can
-  defeat it entirely. Treat it as a party trick, not a referee.
+A stored clip cannot be transcribed in the browser at all (the Web Speech API
+only ever listens to the live microphone), so comparing sound sidesteps
+transcription entirely. The pipeline is the standard one for this job:
+
+1. **MFCC feature frames** — a ~25 ms window, mel filterbank, log, DCT, keeping
+   coefficients 1-12 and dropping coefficient 0 so loudness doesn't count.
+2. **Mean and variance normalisation** — removes each recording's own speaker
+   and microphone colouring, which is what makes two different voices
+   comparable at all.
+3. **Dynamic time warping** with a Sakoe-Chiba band — saying it more slowly
+   still matches, because the alignment stretches.
+4. **Mean cost per step** along the best path, mapped onto 0-100.
+
+Frames too quiet to carry spectral shape are dropped first, and a clip with no
+usable frames is reported as such rather than being given a made-up score.
+
+It is comparing *sounds*, not meaning: a good impression of the right rhythm
+and vowels scores well, and two different speakers will never score as highly
+as the same person twice. That is the right shape for the game — you are being
+marked on your impression.
+
+**Type what you heard** is still there as a separate, optional signal: someone
+reads the backwards clip aloud in words, and that guess is compared against the
+phrase by edit distance plus per-word recall. When both signals exist they
+weigh equally, and stars from the room weigh equally against their average.
 
 ## Offline and privacy
 
@@ -85,10 +104,11 @@ Add it to your home screen and it works on a plane.
 | Feature | Chrome / Edge | Safari | Firefox |
 | --- | --- | --- | --- |
 | Recording + reversing | ✅ | ✅ | ✅ |
-| Speech labels / robot judge | ✅ | ✅ | ❌ (type phrases instead) |
+| Automatic sound-match scoring | ✅ | ✅ | ✅ |
+| Speech labels for phrases | ✅ | ✅ | ❌ (type phrases instead) |
 
-Everything degrades gracefully: with no speech recognition you type the phrase,
-and star ratings still work.
+Everything degrades gracefully: with no speech recognition you type the phrase.
+Automatic scoring needs no speech recognition at all, so it works everywhere.
 
 ## Stack
 
@@ -101,7 +121,8 @@ shadcn/ui + Radix · wavesurfer.js · idb · vite-plugin-pwa · oxlint
 ```
 src/
   lib/        audio pipeline, recorder, speech, IndexedDB, scoring
-              (audio.test.ts covers the silence/noise trimming)
+              (audio.test.ts covers silence/noise trimming,
+               acoustic.test.ts covers the sound-match scoring)
   store/      zustand game store (localStorage-persisted)
   components/ shadcn/ui primitives, waveform, record button, game steps
   routes/     TanStack Router route modules
