@@ -4,9 +4,8 @@ A silly speech game for kids. Record a phrase, listen to it played backwards,
 then try to copy the backwards sound. Flip *your* recording around — if you got
 it right, your gibberish turns back into the original phrase.
 
-Play solo, or pass the device around with up to eight players. Setting up a
-party is one slider and, if you can be bothered, some names — avatars and
-colours are handed out by seat so there is nothing to fiddle with.
+Play solo, or pass the device around with up to eight players. Setting up is one
+slider and nothing else — names, avatars and colours are handed out by seat.
 
 ## Quick start
 
