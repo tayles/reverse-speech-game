@@ -130,5 +130,5 @@ src/
   store/      zustand game store (localStorage-persisted)
   components/ shadcn/ui primitives, waveform, record button, game steps
   routes/     TanStack Router route modules
-  data/       phrase packs, avatars and colours
+  data/       phrase ideas, avatars and colours
 ```
