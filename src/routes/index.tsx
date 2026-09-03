@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useGameStore, leaderboard } from '@/store/game-store'
-import { AVATARS, COLOURS } from '@/data/players'
+import { SOLO_PLAYER } from '@/data/players'
 import { formatDate } from '@/lib/utils'
 import { unlockAudio } from '@/lib/audio'
 
@@ -28,7 +28,7 @@ function HomePage() {
 
   const startSolo = async () => {
     await unlockAudio()
-    const id = createGame('solo', [{ name: 'Me', emoji: AVATARS[0], colour: COLOURS[0] }])
+    const id = createGame('solo', [SOLO_PLAYER])
     void navigate({ to: '/game/$gameId', params: { gameId: id } })
   }
 

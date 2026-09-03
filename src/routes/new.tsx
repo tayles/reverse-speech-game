@@ -4,51 +4,50 @@ import { Rocket, Users } from 'lucide-react'
 import { Route as rootRoute } from './__root'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
 import { useGameStore } from '@/store/game-store'
-import { AVATARS, COLOURS } from '@/data/players'
+import { AVATARS, COLOURS, SOLO_PLAYER } from '@/data/players'
 import { unlockAudio } from '@/lib/audio'
 
-const MIN_PLAYERS = 2
+const MIN_PLAYERS = 1
 const MAX_PLAYERS = 8
 
-/** Everyone gets an avatar and colour by position — one less thing to fiddle with. */
-const avatarFor = (index: number) => AVATARS[index % AVATARS.length]
-const colourFor = (index: number) => COLOURS[index % COLOURS.length]
-const defaultName = (index: number) => `Player ${index + 1}`
+/** Names, avatars and colours all come from the seat — there is nothing to set up. */
+const seat = (index: number) => ({
+  name: `Player ${index + 1}`,
+  emoji: AVATARS[index % AVATARS.length],
+  colour: COLOURS[index % COLOURS.length],
+})
 
 function NewGamePage() {
   const navigate = useNavigate()
   const createGame = useGameStore((s) => s.createGame)
-  const [count, setCount] = useState(MIN_PLAYERS)
-  /**
-   * Names are held for all eight slots, not just the visible ones, so dragging
-   * the slider down and back up doesn't throw away what somebody typed.
-   */
-  const [names, setNames] = useState<string[]>(() => Array.from({ length: MAX_PLAYERS }, () => ''))
-
-  const setName = (index: number, value: string) =>
-    setNames((current) => current.map((name, i) => (i === index ? value : name)))
+  const [count, setCount] = useState(2)
 
   const start = async () => {
     await unlockAudio()
-    const players = Array.from({ length: count }, (_, i) => ({
-      name: names[i].trim() || defaultName(i),
-      emoji: avatarFor(i),
-      colour: colourFor(i),
-    }))
-    const id = createGame('party', players)
+    /*
+     * One player is a solo game, not a party of one: in a party the phrase
+     * master doesn't copy their own clip, so a single player would leave
+     * nobody able to take a turn.
+     */
+    const solo = count === 1
+    const id = createGame(
+      solo ? 'solo' : 'party',
+      solo ? [SOLO_PLAYER] : Array.from({ length: count }, (_, i) => seat(i)),
+    )
     void navigate({ to: '/game/$gameId', params: { gameId: id } })
   }
 
   return (
-    <div className="space-y-5 pb-10">
+    <div className="space-y-6 pb-10">
       <div className="text-center">
         <p className="text-6xl" aria-hidden="true">🎉</p>
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight">How many players?</h1>
         <p className="mt-1 text-lg font-bold text-white/60">
-          Everyone takes turns recording a phrase for the others.
+          {count === 1
+            ? 'Just you — record a phrase and copy it yourself.'
+            : 'Everyone takes turns recording a phrase for the others.'}
         </p>
       </div>
 
@@ -56,7 +55,7 @@ function NewGamePage() {
         <CardContent className="space-y-4 p-5 sm:p-6">
           <div className="flex items-center justify-center gap-3">
             <Users className="size-8 text-bubble" />
-            <span className="text-6xl font-extrabold tabular-nums">{count}</span>
+            <span className="text-7xl font-extrabold tabular-nums">{count}</span>
           </div>
 
           <Slider
@@ -71,44 +70,8 @@ function NewGamePage() {
             <span>{MIN_PLAYERS}</span>
             <span>{MAX_PLAYERS}</span>
           </div>
-
-          <div className="flex flex-wrap justify-center gap-2" aria-hidden="true">
-            {Array.from({ length: count }, (_, i) => (
-              <span
-                key={i}
-                className="grid size-12 animate-pop place-items-center rounded-2xl text-2xl ring-2 ring-white/20"
-                style={{ background: `color-mix(in oklab, ${colourFor(i)} 35%, transparent)` }}
-              >
-                {avatarFor(i)}
-              </span>
-            ))}
-          </div>
         </CardContent>
       </Card>
-
-      <div className="space-y-3">
-        <p className="px-1 text-lg font-extrabold text-white/70">
-          Names <span className="font-bold text-white/40">— leave blank if you like</span>
-        </p>
-        {Array.from({ length: count }, (_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <span
-              className="grid size-14 shrink-0 place-items-center rounded-2xl text-2xl ring-2 ring-white/20"
-              style={{ background: `color-mix(in oklab, ${colourFor(i)} 35%, transparent)` }}
-              aria-hidden="true"
-            >
-              {avatarFor(i)}
-            </span>
-            <Input
-              value={names[i]}
-              maxLength={14}
-              placeholder={defaultName(i)}
-              onChange={(e) => setName(i, e.target.value)}
-              aria-label={`Name for player ${i + 1}`}
-            />
-          </div>
-        ))}
-      </div>
 
       <Button variant="go" size="xl" className="w-full" onClick={() => void start()}>
         <Rocket /> Let&apos;s go!
