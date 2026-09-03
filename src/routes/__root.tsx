@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { requestPersistence } from '@/lib/db'
 import { useGameStore } from '@/store/game-store'
+import micBadge from '@/assets/mic-badge.png'
 
 function useOnline() {
   const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine))
@@ -42,9 +43,7 @@ function RootLayout() {
       <header className="safe-top sticky top-0 z-30 border-b border-white/8 bg-[oklch(0.16_0.045_292/0.75)] px-4 pb-3 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2.5 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
-            <span className="grid size-11 place-items-center rounded-2xl bg-grape text-2xl shadow-lg" aria-hidden="true">
-              🔁
-            </span>
+            <img src={micBadge} alt="" className="h-11 w-auto shrink-0 drop-shadow-lg" />
             <span className="leading-none">
               <span className="block whitespace-nowrap text-lg font-extrabold tracking-tight sm:text-xl">
                 Backwards Brain

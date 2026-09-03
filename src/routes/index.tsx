@@ -8,6 +8,7 @@ import { useGameStore, leaderboard } from '@/store/game-store'
 import { SOLO_PLAYER } from '@/data/players'
 import { formatDate } from '@/lib/utils'
 import { unlockAudio } from '@/lib/audio'
+import micBadge from '@/assets/mic-badge.png'
 
 const STEPS = [
   { emoji: '🎤', title: 'Say a phrase', body: 'Record anything — “wobbly jelly”, your name, a tongue twister.' },
@@ -35,7 +36,11 @@ function HomePage() {
   return (
     <div className="space-y-6 pb-10">
       <section className="animate-pop rounded-blob bg-gradient-to-br from-grape/50 via-bubble/25 to-sky/25 p-6 text-center ring-1 ring-white/15 sm:p-8">
-        <p className="animate-float text-6xl sm:text-7xl" aria-hidden="true">🗣️🔁</p>
+        <img
+          src={micBadge}
+          alt=""
+          className="mx-auto h-28 w-auto animate-float drop-shadow-2xl sm:h-36"
+        />
         <h1 className="mt-3 text-4xl font-extrabold leading-none tracking-tight sm:text-5xl">
           Can you talk backwards?
         </h1>
