@@ -59,16 +59,12 @@ export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecord
       <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-blob bg-white/8 px-5 py-4 ring-1 ring-white/12">
         <p className="text-lg font-bold text-white/55">
           Need an idea? Try{' '}
-          {/* Quotes are glued to the phrase so a wrap never strands one. */}
-          <span className="whitespace-nowrap">
-            <span className="text-white/35">“</span>
-            <span
-              key={suggestion}
-              className="inline-block animate-pop text-xl font-extrabold text-sun"
-            >
-              {suggestion}
-            </span>
-            <span className="text-white/35">”</span>
+          {/* Quotes ride along inside, so a wrap never strands one. */}
+          <span
+            key={suggestion}
+            className="inline-block animate-pop whitespace-nowrap text-xl font-extrabold text-sun"
+          >
+            “{suggestion}”
           </span>
         </p>
         <Button variant="ghost" size="sm" className="ml-auto" onClick={suggest}>
