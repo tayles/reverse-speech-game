@@ -57,6 +57,8 @@ export function Waveform({
   const [duration, setDuration] = useState(0)
   const finishRef = useRef(onFinish)
   const playRef = useRef(onPlay)
+  /** Read by the seek handler, which is registered once when the wave is built. */
+  const rateRef = useRef(NORMAL_RATE)
   finishRef.current = onFinish
   playRef.current = onPlay
 
@@ -65,6 +67,7 @@ export function Waveform({
     setReady(false)
     setPlaying(false)
     setRate(NORMAL_RATE)
+    rateRef.current = NORMAL_RATE
 
     const ws = WaveSurfer.create({
       container: containerRef.current,
@@ -95,6 +98,14 @@ export function Waveform({
       playRef.current?.()
     })
     ws.on('pause', () => setPlaying(false))
+    // Tapping the wave should start it from there, not just move the cursor.
+    ws.on('interaction', () => {
+      if (ws.isPlaying()) return
+      void unlockAudio().then(() => {
+        ws.setPlaybackRate(rateRef.current, true)
+        ws.play().catch(() => {})
+      })
+    })
     ws.on('finish', () => {
       setPlaying(false)
       finishRef.current?.()
@@ -124,6 +135,7 @@ export function Waveform({
       return
     }
     setRate(target)
+    rateRef.current = target
     ws.setPlaybackRate(target, true)
     if (!playing) {
       try {
@@ -197,7 +209,7 @@ export function Waveform({
             </span>
           </div>
         )}
-        <div ref={containerRef} className="w-full cursor-pointer" />
+        <div ref={containerRef} className="w-full cursor-pointer" title="Tap to play from here" />
       </div>
     </div>
   )

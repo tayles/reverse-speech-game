@@ -1,37 +1,50 @@
 import { useState } from 'react'
-import { ArrowRight, Pencil, Check } from 'lucide-react'
+import { Pencil, Check, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Waveform } from '@/components/waveform'
 import { PlayerChip } from '@/components/player-chip'
+import { RecordButton, type RecordingResult } from '@/components/record-button'
 import { useClip } from '@/components/use-clip'
-import type { Player, Round } from '@/store/game-store'
-import { possessive } from '@/lib/utils'
+import type { Player, Round, Settings } from '@/store/game-store'
 
 interface Props {
   round: Round
   roundNumber: number
   master: Player
-  nextPlayer: Player | undefined
+  /** Whoever is up next to copy the sound. */
+  player: Player
   attemptsDone: number
   attemptsTotal: number
   solo: boolean
+  settings: Settings
+  /** Re-recording the phrase is only offered while it would spoil nobody's go. */
+  canRerecord: boolean
   onPhraseChange: (phrase: string) => void
-  onReady: () => void
+  onRerecord: () => void
+  onRecorded: (result: RecordingResult) => Promise<void>
 }
 
+/**
+ * Listening and copying live on one page. They were two screens with a "my
+ * turn" button between them, which meant a tap and a page change between
+ * hearing the sound and copying it — exactly when you most want it fresh.
+ */
 export function ListenStep({
   round,
   roundNumber,
   master,
-  nextPlayer,
+  player,
   attemptsDone,
   attemptsTotal,
   solo,
+  settings,
+  canRerecord,
   onPhraseChange,
-  onReady,
+  onRerecord,
+  onRecorded,
 }: Props) {
   const { forwardUrl, reversedUrl, loading, missing } = useClip(round.audioId)
   const [editing, setEditing] = useState(!round.phrase)
@@ -52,6 +65,56 @@ export function ListenStep({
         </p>
         <h2 className="mt-1 text-3xl font-extrabold tracking-tight">Listen carefully!</h2>
       </div>
+
+      <Card className="ring-2 ring-bubble/50">
+        <CardContent className="space-y-4 p-5">
+          <div>
+            <p className="text-2xl font-extrabold">🔁 Backwards!</p>
+            <p className="text-base font-bold text-white/55">
+              This is the sound to copy. Tap the snail to hear it slowly, or tap anywhere on the
+              wave to start from there.
+            </p>
+          </div>
+
+          {missing && (
+            <p className="rounded-2xl bg-tang/20 p-3 text-center text-base font-bold text-tang">
+              That recording has gone missing from this device.
+            </p>
+          )}
+
+          {!loading && reversedUrl && (
+            <Waveform
+              url={reversedUrl}
+              colour="var(--color-bubble)"
+              height={80}
+              autoPlay
+              label="Play it as many times as you like"
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="text-center">
+        <PlayerChip player={player} size="lg" showName={false} className="justify-center" />
+        <h3 className="mt-2 text-3xl font-extrabold tracking-tight">
+          {solo ? 'Copy the gibberish!' : `Go on ${player.name} — copy the gibberish!`}
+        </h3>
+        <p className="mx-auto mt-1 max-w-sm text-lg font-bold text-white/60">
+          Make the same sounds you just heard. Don&apos;t say the real phrase!
+        </p>
+      </div>
+
+      <RecordButton
+        maxSeconds={settings.maxRecordSeconds + 3}
+        /* The attempt is deliberate gibberish, so auto-labelling would be noise. */
+        speechLabels={false}
+        haptics={settings.haptics}
+        autoClean={settings.autoClean}
+        colour={player.colour}
+        idleLabel="Tap and make the sound"
+        showCaption={false}
+        onComplete={onRecorded}
+      />
 
       <Card>
         <CardContent className="space-y-4 p-5">
@@ -96,42 +159,15 @@ export function ListenStep({
             </p>
           )}
 
-          {missing && (
-            <p className="rounded-2xl bg-tang/20 p-3 text-center text-base font-bold text-tang">
-              That recording has gone missing from this device.
-            </p>
-          )}
-
           {!loading && forwardUrl && (
             <Waveform url={forwardUrl} colour="var(--color-sky)" label="The real phrase" height={56} />
           )}
         </CardContent>
       </Card>
 
-      <Card className="ring-2 ring-bubble/50">
-        <CardContent className="space-y-4 p-5">
-          <div>
-            <p className="text-2xl font-extrabold">🔁 Backwards!</p>
-            <p className="text-base font-bold text-white/55">
-              This is the sound to copy. Tap the snail to hear it slowly.
-            </p>
-          </div>
-
-          {!loading && reversedUrl && (
-            <Waveform
-              url={reversedUrl}
-              colour="var(--color-bubble)"
-              height={80}
-              label="Play it as many times as you like"
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      {nextPlayer && (
-        <Button variant="go" size="xl" className="w-full" onClick={onReady}>
-          <span className="mr-1 text-3xl" aria-hidden="true">{nextPlayer.emoji}</span>
-          {solo ? 'My turn!' : `${possessive(nextPlayer.name)} turn`} <ArrowRight />
+      {canRerecord && (
+        <Button variant="soft" size="lg" className="w-full" onClick={onRerecord}>
+          <RotateCcw /> Re-record the phrase
         </Button>
       )}
     </div>
