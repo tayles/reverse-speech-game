@@ -156,9 +156,11 @@ function NewGamePage() {
 
               /*
                * The chip cannot be a button, because it now holds two of its
-               * own. The name is the button instead, and the actions slide out
-               * beside it on hover, on keyboard focus, or on a tap — which is
-               * the only one of the three a touchscreen has.
+               * own. The name is the button instead, and the actions sit over
+               * the top of it — an overlay rather than an expansion, so the
+               * chip keeps its size and the row never reflows under the
+               * cursor. It opens on hover, on keyboard focus, or on a tap,
+               * which is the only one of the three a touchscreen has.
                */
               const open = selected === i
 
@@ -166,9 +168,9 @@ function NewGamePage() {
                 <span
                   key={i}
                   className={cn(
-                    'group flex items-center gap-1.5 rounded-2xl py-1.5 pl-2 pr-1.5 text-base font-extrabold ring-1 transition',
+                    'group relative flex min-w-28 items-center rounded-2xl py-2 pl-2 pr-3.5 text-base font-extrabold ring-1 transition-colors',
                     open
-                      ? 'bg-white/12 ring-2 ring-white/30'
+                      ? 'bg-white/12 ring-white/25'
                       : 'bg-white/8 ring-white/12 hover:bg-white/12',
                   )}
                 >
@@ -177,7 +179,7 @@ function NewGamePage() {
                     onClick={() => setSelected(open ? null : i)}
                     aria-expanded={open}
                     aria-label={`${nameFor(i)} — rename or remove`}
-                    className="flex items-center gap-2 rounded-xl pr-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+                    className="flex min-w-0 flex-1 items-center gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
                   >
                     <span
                       className="grid size-8 shrink-0 place-items-center rounded-lg text-lg"
@@ -189,36 +191,32 @@ function NewGamePage() {
                     <span className="max-w-28 truncate">{nameFor(i)}</span>
                   </button>
 
-                  {/* Animating the grid track rather than a hard-coded width
-                      keeps the reveal smooth without guessing how wide two
-                      buttons are. */}
                   <span
                     className={cn(
-                      'grid transition-[grid-template-columns,opacity] duration-150',
+                      'absolute inset-0 flex items-center justify-center gap-2 rounded-2xl bg-ink/75 backdrop-blur-sm transition-opacity duration-150',
                       open
-                        ? 'grid-cols-[1fr] opacity-100'
-                        : 'grid-cols-[0fr] opacity-0 group-focus-within:grid-cols-[1fr] group-focus-within:opacity-100 group-hover:grid-cols-[1fr] group-hover:opacity-100',
+                        ? 'opacity-100'
+                        : 'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100',
                     )}
                   >
-                    <span className="flex items-center gap-1.5 overflow-hidden">
-                      <Button
-                        variant="soft"
-                        size="iconSm"
-                        onClick={() => beginEdit(i)}
-                        aria-label={`Rename ${nameFor(i)}`}
-                      >
-                        <Pencil />
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="iconSm"
-                        onClick={() => removePlayer(i)}
-                        disabled={count <= MIN_PLAYERS}
-                        aria-label={`Remove ${nameFor(i)}`}
-                      >
-                        <Trash2 />
-                      </Button>
-                    </span>
+                    <Button
+                      size="iconSm"
+                      className="size-9 rounded-xl"
+                      onClick={() => beginEdit(i)}
+                      aria-label={`Rename ${nameFor(i)}`}
+                    >
+                      <Pencil />
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="iconSm"
+                      className="size-9 rounded-xl"
+                      onClick={() => removePlayer(i)}
+                      disabled={count <= MIN_PLAYERS}
+                      aria-label={`Remove ${nameFor(i)}`}
+                    >
+                      <Trash2 />
+                    </Button>
                   </span>
                 </span>
               )
@@ -227,7 +225,6 @@ function NewGamePage() {
             {/* Adding a seat mid-rename would push a blank field into the row. */}
             {!editing && (
               <Button
-                variant="soft"
                 size="icon"
                 onClick={addPlayer}
                 disabled={count >= MAX_PLAYERS}
@@ -238,7 +235,7 @@ function NewGamePage() {
             )}
 
             <Button
-              variant={editing ? 'go' : 'soft'}
+              variant={editing ? 'go' : 'default'}
               size="icon"
               onClick={() => (editing ? setEditing(false) : beginEdit(0))}
               aria-label={editing ? 'Done editing names' : 'Edit names'}
