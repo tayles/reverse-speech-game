@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Lightbulb, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PlayerChip } from '@/components/player-chip'
 import { RecordButton, type RecordingResult } from '@/components/record-button'
@@ -16,13 +16,9 @@ interface Props {
 }
 
 export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecorded }: Props) {
-  /**
-   * Stays null until it is asked for. A suggestion on screen doubles as the
-   * phrase label when speech recognition comes back empty, so offering one
-   * unprompted would put words in the player's mouth.
-   */
-  const [suggestion, setSuggestion] = useState<string | null>(null)
+  const [suggestion, setSuggestion] = useState(() => pickRandom(PHRASE_IDEAS))
 
+  /** Never hand back the phrase already on screen. */
   const suggest = () =>
     setSuggestion((current) => {
       let next = pickRandom(PHRASE_IDEAS)
@@ -49,19 +45,6 @@ export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecord
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-blob bg-white/8 px-4 py-3 text-center ring-1 ring-white/12">
-        <span className="text-lg font-bold text-white/55">Need an idea?</span>
-        {suggestion && (
-          <span key={suggestion} className="animate-pop text-xl font-extrabold text-sun">
-            Try “{suggestion}”
-          </span>
-        )}
-        <Button variant="ghost" size="sm" onClick={suggest}>
-          {suggestion ? <RefreshCw /> : <Lightbulb />}
-          {suggestion ? 'Another one' : 'Give me one'}
-        </Button>
-      </div>
-
       <RecordButton
         maxSeconds={settings.maxRecordSeconds}
         speechLabels={settings.speechLabels}
@@ -72,6 +55,26 @@ export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecord
         idleLabel="Tap the mic and speak"
         onComplete={(result) => onRecorded(result, suggestion)}
       />
+
+      <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-blob bg-white/8 px-5 py-4 ring-1 ring-white/12">
+        <p className="text-lg font-bold text-white/55">
+          Need an idea? Try{' '}
+          {/* Quotes are glued to the phrase so a wrap never strands one. */}
+          <span className="whitespace-nowrap">
+            <span className="text-white/35">“</span>
+            <span
+              key={suggestion}
+              className="inline-block animate-pop text-xl font-extrabold text-sun"
+            >
+              {suggestion}
+            </span>
+            <span className="text-white/35">”</span>
+          </span>
+        </p>
+        <Button variant="ghost" size="sm" className="ml-auto" onClick={suggest}>
+          <RefreshCw /> Another one
+        </Button>
+      </div>
     </div>
   )
 }

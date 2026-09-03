@@ -108,9 +108,11 @@ export function ListenStep({
             </button>
           )}
 
-          {round.phraseSource === 'speech' && round.phrase && (
+          {round.phrase && round.phraseSource !== 'manual' && (
             <p className="text-center text-sm font-bold text-white/40">
-              🤖 heard automatically — tap it to fix
+              {round.phraseSource === 'speech'
+                ? '🤖 heard automatically — tap it to fix'
+                : '💡 from the idea list — tap it to fix'}
             </p>
           )}
 

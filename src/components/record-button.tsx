@@ -198,9 +198,17 @@ export function RecordButton({
           disabled={busy || disabled}
           aria-label={recording ? 'Stop recording' : 'Start recording'}
           className={cn(
-            'relative grid size-44 place-items-center rounded-full text-ink transition-transform duration-100',
-            'shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:translate-y-[3px] hover:shadow-[0_7px_0_0_rgba(0,0,0,0.35)]',
-            'active:translate-y-[6px] active:shadow-[0_4px_0_0_rgba(0,0,0,0.35)]',
+            'relative grid size-44 place-items-center rounded-full text-ink',
+            'transition-[scale,box-shadow,filter] duration-150',
+            /*
+             * The mic neither travels on hover nor on click, unlike the other
+             * buttons: its countdown ring is a separate element behind it, so
+             * any vertical movement slides the button out of its own ring.
+             * A round key presses convincingly by shrinking instead — which
+             * keeps it concentric — lighting up on hover and sinking on click.
+             */
+            'shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:brightness-110 hover:ring-8 hover:ring-white/25',
+            'active:scale-95 active:shadow-[0_5px_0_0_rgba(0,0,0,0.35)]',
             'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60',
             recording && 'animate-pulse-ring',
             (busy || disabled) && 'opacity-60',
