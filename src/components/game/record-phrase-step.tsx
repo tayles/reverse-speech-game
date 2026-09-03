@@ -85,6 +85,7 @@ export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecord
         speechLabels={settings.speechLabels}
         lang={settings.lang}
         haptics={settings.haptics}
+        autoClean={settings.autoClean}
         colour={master.colour}
         idleLabel="Tap the mic and speak"
         onComplete={(result) => onRecorded(result, suggestion)}

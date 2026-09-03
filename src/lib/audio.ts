@@ -46,36 +46,181 @@ export function reverseBuffer(input: AudioBuffer): AudioBuffer {
   return out
 }
 
-/**
- * Chop off leading/trailing silence so the reversed clip starts immediately.
- * Keeps a short pad either side so words are not clipped.
- */
-export function trimSilence(input: AudioBuffer, threshold = 0.012, padSeconds = 0.06): AudioBuffer {
-  const ch0 = input.getChannelData(0)
-  const n = ch0.length
-  const win = Math.max(1, Math.floor(input.sampleRate * 0.01))
+export interface CleanOptions {
+  /** Runs shorter than this at the very edges are taps, not words. */
+  minSegmentSeconds?: number
+  /** Quiet gaps shorter than this don't split a run — stop consonants need this. */
+  maxGapSeconds?: number
+  /** Breathing room kept either side of the speech. */
+  padSeconds?: number
+  /** Fade applied at each cut so trimming doesn't itself introduce a click. */
+  fadeSeconds?: number
+}
 
-  const loud = (i: number) => {
+const CLEAN_DEFAULTS: Required<CleanOptions> = {
+  minSegmentSeconds: 0.09,
+  maxGapSeconds: 0.12,
+  padSeconds: 0.06,
+  fadeSeconds: 0.008,
+}
+
+/**
+ * One-pole high-pass. Used only to build the *detection* signal: handling
+ * rumble and mains hum carry real energy and would otherwise read as speech,
+ * so we look for content in a version of the signal with the low end removed.
+ * The audio we actually keep is never filtered.
+ */
+function highPass(data: Float32Array, sampleRate: number, cutoff = 100): Float32Array {
+  const rc = 1 / (2 * Math.PI * cutoff)
+  const dt = 1 / sampleRate
+  const alpha = rc / (rc + dt)
+  const out = new Float32Array(data.length)
+  let previousIn = data[0] ?? 0
+  let previousOut = 0
+  for (let i = 1; i < data.length; i++) {
+    previousOut = alpha * (previousOut + data[i] - previousIn)
+    previousIn = data[i]
+    out[i] = previousOut
+  }
+  return out
+}
+
+interface Segment {
+  /** Inclusive frame index. */
+  from: number
+  /** Exclusive frame index. */
+  to: number
+  seconds: number
+  /** Mean zero-crossing rate: high for clicks and hiss, lower for voiced speech. */
+  zcr: number
+}
+
+export interface ContentBounds {
+  start: number
+  end: number
+}
+
+/**
+ * Find where the actual content of a recording starts and ends, ignoring
+ * silence *and* short transients at the edges — the tap that starts the
+ * recording, the click that stops it, a chair creak before the first word.
+ *
+ * Pure and sample-rate aware so it can be unit tested without Web Audio.
+ * Returns null when nothing looks like content, meaning "leave it alone".
+ */
+export function findContentBounds(
+  samples: Float32Array,
+  sampleRate: number,
+  options: CleanOptions = {},
+): ContentBounds | null {
+  const { minSegmentSeconds, maxGapSeconds, padSeconds } = { ...CLEAN_DEFAULTS, ...options }
+  const n = samples.length
+  const frame = Math.max(1, Math.round(sampleRate * 0.02))
+  const hop = Math.max(1, Math.round(sampleRate * 0.01))
+  if (n < frame * 3) return null
+
+  const detect = highPass(samples, sampleRate)
+  const frameCount = Math.max(1, Math.floor((n - frame) / hop) + 1)
+  const rms = new Float32Array(frameCount)
+  const zcr = new Float32Array(frameCount)
+
+  for (let f = 0; f < frameCount; f++) {
+    const start = f * hop
+    const end = Math.min(n, start + frame)
     let sum = 0
-    const end = Math.min(n, i + win)
-    for (let k = i; k < end; k++) sum += ch0[k] * ch0[k]
-    return Math.sqrt(sum / Math.max(1, end - i)) > threshold
+    let crossings = 0
+    for (let i = start; i < end; i++) {
+      sum += detect[i] * detect[i]
+      if (i > start && (detect[i] < 0) !== (detect[i - 1] < 0)) crossings++
+    }
+    const width = Math.max(1, end - start)
+    rms[f] = Math.sqrt(sum / width)
+    zcr[f] = crossings / width
   }
 
-  let start = 0
-  while (start < n && !loud(start)) start += win
-  let end = n - win
-  while (end > start && !loud(end)) end -= win
+  // Adaptive threshold: sit above this recording's own noise floor, but also
+  // demand a sensible fraction of its loudest frame so hiss never counts.
+  const sorted = rms.toSorted()
+  const loudest = sorted[sorted.length - 1]
+  if (loudest < 1e-4) return null
+  // Cap the floor estimate: in a clip that is almost entirely speech the tenth
+  // percentile is itself speech, and an uncapped floor would mask the lot.
+  const floor = Math.min(sorted[Math.floor(sorted.length * 0.1)], loudest * 0.1)
+  const threshold = Math.max(floor * 3 + 0.0015, loudest * 0.08)
 
-  if (start >= end) return input // all quiet — leave it alone
+  const maxGapFrames = Math.max(1, Math.round(maxGapSeconds / (hop / sampleRate)))
+  const segments: Segment[] = []
+  let index = 0
+  while (index < frameCount) {
+    if (rms[index] <= threshold) {
+      index++
+      continue
+    }
+    let end = index
+    let gap = 0
+    for (let f = index + 1; f < frameCount; f++) {
+      if (rms[f] > threshold) {
+        end = f
+        gap = 0
+      } else if (++gap > maxGapFrames) {
+        break
+      }
+    }
+    let zcrSum = 0
+    for (let f = index; f <= end; f++) zcrSum += zcr[f]
+    segments.push({
+      from: index,
+      to: end + 1,
+      seconds: ((end + 1 - index) * hop) / sampleRate,
+      zcr: zcrSum / (end + 1 - index),
+    })
+    index = end + maxGapFrames + 1
+  }
 
-  const pad = Math.floor(input.sampleRate * padSeconds)
-  start = Math.max(0, start - pad)
-  end = Math.min(n, end + win + pad)
+  if (segments.length === 0) return null
 
-  const out = copyBuffer(input, end - start)
+  // Only ever discard from the ends: cutting inside the clip would chop words.
+  // A short burst is a tap; a slightly longer one with a high zero-crossing
+  // rate is a clack or a knock rather than a voice.
+  const isNoise = (seg: Segment) =>
+    seg.seconds < minSegmentSeconds || (seg.seconds < minSegmentSeconds * 2.5 && seg.zcr > 0.25)
+
+  let first = 0
+  let last = segments.length - 1
+  while (first < last && isNoise(segments[first])) first++
+  while (last > first && isNoise(segments[last])) last--
+  if (first > last) return null
+
+  const pad = Math.round(sampleRate * padSeconds)
+  const start = Math.max(0, segments[first].from * hop - pad)
+  const end = Math.min(n, (segments[last].to - 1) * hop + frame + pad)
+  return end > start ? { start, end } : null
+}
+
+/**
+ * Trim a recording down to its content, fading each cut so the edit itself is
+ * inaudible. Falls back to the untouched buffer whenever detection is unsure.
+ */
+export function cleanEdges(input: AudioBuffer, options: CleanOptions = {}): AudioBuffer {
+  const bounds = findContentBounds(input.getChannelData(0), input.sampleRate, options)
+  if (!bounds) return input
+
+  const { start, end } = bounds
+  const length = end - start
+  if (length < input.sampleRate * 0.1 || length === input.length) return input
+
+  const { fadeSeconds } = { ...CLEAN_DEFAULTS, ...options }
+  const fade = Math.min(Math.floor(length / 2), Math.round(input.sampleRate * fadeSeconds))
+  const out = copyBuffer(input, length)
+
   for (let c = 0; c < input.numberOfChannels; c++) {
-    out.getChannelData(c).set(input.getChannelData(c).subarray(start, end))
+    const dst = out.getChannelData(c)
+    dst.set(input.getChannelData(c).subarray(start, end))
+    for (let i = 0; i < fade; i++) {
+      const gain = i / fade
+      dst[i] *= gain
+      dst[length - 1 - i] *= gain
+    }
   }
   return out
 }
@@ -178,15 +323,27 @@ export interface ProcessedClip {
   reversedPeaks: number[]
 }
 
+export interface ProcessOptions {
+  /**
+   * Trim silence and edge transients (button presses, taps) off both ends.
+   * Off means the recording is kept exactly as captured.
+   */
+  autoClean?: boolean
+}
+
 /**
- * Full pipeline for one recording: clean it up, reverse it, and produce
+ * Full pipeline for one recording: tidy it up, reverse it, and produce
  * both WAV blobs plus pre-computed waveform peaks for instant drawing.
  */
-export async function processRecording(raw: Blob): Promise<ProcessedClip> {
+export async function processRecording(
+  raw: Blob,
+  options: ProcessOptions = {},
+): Promise<ProcessedClip> {
   const decoded = await decodeBlob(raw)
   const mono = toMono(decoded)
   const small = await resample(mono)
-  const clean = normalise(trimSilence(small))
+  const trimmed = options.autoClean === false ? small : cleanEdges(small)
+  const clean = normalise(trimmed)
   const reversed = reverseBuffer(clean)
   const peaks = extractPeaks(clean)
   return {

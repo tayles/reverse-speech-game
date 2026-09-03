@@ -49,6 +49,7 @@ export function AttemptStep({ round, player, settings, solo, onBack, onRecorded 
         /* The attempt is deliberate gibberish, so auto-labelling would be noise. */
         speechLabels={false}
         haptics={settings.haptics}
+        autoClean={settings.autoClean}
         colour={player.colour}
         idleLabel="Tap and make the sound"
         showCaption={false}
