@@ -18,16 +18,20 @@ bun run dev
 Then open the printed URL. Allow microphone access when asked.
 
 ```bash
-bun run build     # type-check + production bundle into dist/
-bun run preview   # serve the production build
-bun run lint      # oxlint
-bun run test      # unit tests
+bun run build         # type-check + production bundle into dist/
+bun run preview       # serve the production build
+bun run lint          # oxlint
+bun run format        # oxfmt, in place
+bun run format:check  # oxfmt, no writes — what CI runs
+bun run typecheck     # tsc alone
+bun run test          # unit tests
 ```
 
 ## How a round works
 
-1. **Record** — the phrase master says something short and clear. Speech
-   recognition writes down what it heard, and it can be corrected by tapping it.
+1. **Record** — one player is the phrase master for the round; they say
+   something short and clear. Speech recognition writes down what it heard, and
+   it can be corrected by tapping it.
 2. **Listen and copy** — one page. The backwards clip plays the moment it opens,
    and the mic is right below it, so there is nothing between hearing the sound
    and having a go. Every clip has a play button and a snail button beside it,
@@ -87,9 +91,10 @@ and vowels scores well, and two different speakers will never score as highly
 as the same person twice. That is the right shape for the game — you are being
 marked on your impression.
 
-The score is the whole of it — there are no stars to award and nothing to type.
-A clip too quiet or too short to compare says so rather than inventing a number,
-and you can simply have another go.
+The two constants that map distance onto a score live at the top of
+`src/lib/acoustic.ts` and are calibrated against the synthetic vowels in
+`acoustic.test.ts`, not against real voices. If real attempts ever feel harshly
+marked, those are the numbers to turn.
 
 ## Offline and privacy
 
@@ -119,7 +124,7 @@ Automatic scoring needs no speech recognition at all, so it works everywhere.
 
 Bun · Vite · React 19 · TanStack Router (hash history, so deep links survive
 being served from any path) · Zustand + persist · Tailwind CSS v4 ·
-shadcn/ui + Radix · wavesurfer.js · idb · vite-plugin-pwa · oxlint
+shadcn/ui + Radix · wavesurfer.js · idb · vite-plugin-pwa · oxlint · oxfmt
 
 ## Layout
 
@@ -132,4 +137,19 @@ src/
   components/ shadcn/ui primitives, waveform, record button, game steps
   routes/     TanStack Router route modules
   data/       phrase ideas, avatars and colours
+  assets/     the mascot badge used in the interface
+public/       favicon and the installable app icons
 ```
+
+## Deploying
+
+`.github/workflows/deploy.yml` is one job: it checks formatting, lints, builds,
+tests and then publishes `dist/` to GitHub Pages, each step gating the next. It
+runs on pushes to `main` and on demand.
+
+Nothing about the build is Pages-specific. Vite emits relative asset URLs
+(`base: './'`) and the router uses hash history, so the app works from any
+subpath without a rewrite rule or a 404 fallback.
+
+Pages must be enabled for the repo — the workflow asks for that itself via
+`configure-pages`, but on a private repo Pages also needs a paid plan.
