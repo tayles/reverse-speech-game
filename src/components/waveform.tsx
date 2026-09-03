@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import WaveSurfer from 'wavesurfer.js'
-import { Play, Pause, Loader2 } from 'lucide-react'
+import { Play, Pause, Loader2, Snail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { unlockAudio } from '@/lib/audio'
 import { formatDuration } from '@/lib/utils'
+
+/**
+ * Slow playback speed. Fast enough to still sound like a voice, slow enough
+ * that the syllables of a reversed clip come apart.
+ */
+export const SLOW_RATE = 0.6
+const NORMAL_RATE = 1
 
 interface WaveformProps {
   url: string | null
@@ -14,15 +21,20 @@ interface WaveformProps {
   sublabel?: string
   /** Big round play button on the left; set false for a bare waveform. */
   showPlayButton?: boolean
+  /** Snail button for slow playback, alongside the play button. */
+  showSlowButton?: boolean
   autoPlay?: boolean
   onFinish?: () => void
   onPlay?: () => void
-  playbackRate?: number
 }
 
 /**
  * Interactive waveform + transport, backed by wavesurfer.js.
  * Tapping the waveform seeks, which kids love for scrubbing back and forth.
+ *
+ * Two transport buttons rather than a speed toggle: play always means normal
+ * speed and the snail always means slow, so neither button's meaning depends
+ * on state you have to notice first.
  */
 export function Waveform({
   url,
@@ -32,15 +44,16 @@ export function Waveform({
   label,
   sublabel,
   showPlayButton = true,
+  showSlowButton = true,
   autoPlay = false,
   onFinish,
   onPlay,
-  playbackRate = 1,
 }: WaveformProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const wsRef = useRef<WaveSurfer | null>(null)
   const [ready, setReady] = useState(false)
   const [playing, setPlaying] = useState(false)
+  const [rate, setRate] = useState(NORMAL_RATE)
   const [duration, setDuration] = useState(0)
   const finishRef = useRef(onFinish)
   const playRef = useRef(onPlay)
@@ -51,6 +64,7 @@ export function Waveform({
     if (!containerRef.current || !url) return
     setReady(false)
     setPlaying(false)
+    setRate(NORMAL_RATE)
 
     const ws = WaveSurfer.create({
       container: containerRef.current,
@@ -72,7 +86,6 @@ export function Waveform({
     ws.on('ready', () => {
       setReady(true)
       setDuration(ws.getDuration())
-      ws.setPlaybackRate(playbackRate)
       if (autoPlay) {
         void unlockAudio().then(() => ws.play().catch(() => {}))
       }
@@ -96,47 +109,85 @@ export function Waveform({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, height, colour])
 
-  useEffect(() => {
-    wsRef.current?.setPlaybackRate(playbackRate)
-  }, [playbackRate])
-
-  const toggle = async () => {
+  /**
+   * Play at the given speed, or pause if that speed is already playing.
+   * Pitch is preserved explicitly rather than left to the browser default, so
+   * a slowed clip sounds like the same voice on every platform.
+   */
+  const playAt = async (target: number) => {
     const ws = wsRef.current
     if (!ws || !ready) return
     await unlockAudio()
-    try {
-      await ws.playPause()
-    } catch {
-      /* autoplay blocked — the user can tap again */
+
+    if (playing && rate === target) {
+      ws.pause()
+      return
+    }
+    setRate(target)
+    ws.setPlaybackRate(target, true)
+    if (!playing) {
+      try {
+        await ws.play()
+      } catch {
+        /* autoplay blocked — the user can tap again */
+      }
     }
   }
 
+  const buttonBase =
+    'grid shrink-0 place-items-center rounded-full text-ink transition active:scale-95 disabled:opacity-50 shadow-[0_6px_0_0_rgba(0,0,0,0.35)] active:translate-y-[3px] active:shadow-[0_2px_0_0_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50'
+
+  const playingAt = (target: number) => playing && rate === target
+
   return (
-    <div className={cn('flex items-center gap-4', className)}>
+    <div className={cn('flex items-center gap-3 sm:gap-4', className)}>
       {showPlayButton && (
         <button
           type="button"
-          onClick={toggle}
+          onClick={() => void playAt(NORMAL_RATE)}
           disabled={!ready}
-          aria-label={playing ? 'Pause' : 'Play'}
-          className={cn(
-            'grid size-[4.5rem] shrink-0 place-items-center rounded-full text-ink transition active:scale-95 disabled:opacity-50',
-            'shadow-[0_6px_0_0_rgba(0,0,0,0.35)] active:translate-y-[3px] active:shadow-[0_2px_0_0_rgba(0,0,0,0.35)]',
-            'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50',
-          )}
+          aria-label={playingAt(NORMAL_RATE) ? 'Pause' : 'Play'}
+          className={cn(buttonBase, 'size-16 sm:size-[4.5rem]')}
           style={{ background: colour }}
         >
           {ready ? (
-            playing ? (
-              <Pause className="size-8" fill="currentColor" />
+            playingAt(NORMAL_RATE) ? (
+              <Pause className="size-7 sm:size-8" fill="currentColor" />
             ) : (
-              <Play className="ml-1 size-8" fill="currentColor" />
+              <Play className="ml-1 size-7 sm:size-8" fill="currentColor" />
             )
           ) : (
-            <Loader2 className="size-7 animate-spin" />
+            <Loader2 className="size-6 animate-spin sm:size-7" />
           )}
         </button>
       )}
+
+      {showSlowButton && (
+        <button
+          type="button"
+          onClick={() => void playAt(SLOW_RATE)}
+          disabled={!ready}
+          aria-label={playingAt(SLOW_RATE) ? 'Pause slow playback' : 'Play slowly'}
+          title="Play slowly"
+          className={cn(
+            buttonBase,
+            'size-12 sm:size-14',
+            playingAt(SLOW_RATE) ? 'text-ink' : 'text-white',
+          )}
+          style={{
+            background: playingAt(SLOW_RATE)
+              ? colour
+              : `color-mix(in oklab, ${colour} 28%, transparent)`,
+          }}
+        >
+          {playingAt(SLOW_RATE) ? (
+            <Pause className="size-5 sm:size-6" fill="currentColor" />
+          ) : (
+            <Snail className="size-6 sm:size-7" strokeWidth={2.25} />
+          )}
+        </button>
+      )}
+
       <div className="min-w-0 flex-1">
         {(label || sublabel) && (
           <div className="mb-1 flex items-baseline justify-between gap-3">

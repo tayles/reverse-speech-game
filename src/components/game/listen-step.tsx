@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, Pencil, Check, Gauge } from 'lucide-react'
+import { ArrowRight, Pencil, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,7 @@ import { Waveform } from '@/components/waveform'
 import { PlayerChip } from '@/components/player-chip'
 import { useClip } from '@/components/use-clip'
 import type { Player, Round } from '@/store/game-store'
-import { cn, possessive } from '@/lib/utils'
+import { possessive } from '@/lib/utils'
 
 interface Props {
   round: Round
@@ -21,11 +21,6 @@ interface Props {
   onPhraseChange: (phrase: string) => void
   onReady: () => void
 }
-
-const SPEEDS = [
-  { rate: 0.7, label: 'Slow' },
-  { rate: 1, label: 'Normal' },
-] as const
 
 export function ListenStep({
   round,
@@ -41,7 +36,6 @@ export function ListenStep({
   const { forwardUrl, reversedUrl, loading, missing } = useClip(round.audioId)
   const [editing, setEditing] = useState(!round.phrase)
   const [draft, setDraft] = useState(round.phrase)
-  const [rate, setRate] = useState<number>(1)
 
   const savePhrase = () => {
     onPhraseChange(draft.trim())
@@ -116,27 +110,11 @@ export function ListenStep({
 
       <Card className="ring-2 ring-bubble/50">
         <CardContent className="space-y-4 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-2xl font-extrabold">🔁 Backwards!</p>
-              <p className="text-base font-bold text-white/55">This is the sound to copy.</p>
-            </div>
-            <div className="flex items-center gap-1 rounded-2xl bg-white/8 p-1 ring-1 ring-white/10">
-              <Gauge className="ml-1.5 size-4 text-white/40" />
-              {SPEEDS.map((s) => (
-                <button
-                  key={s.rate}
-                  type="button"
-                  onClick={() => setRate(s.rate)}
-                  className={cn(
-                    'rounded-xl px-3 py-2 text-sm font-extrabold transition',
-                    rate === s.rate ? 'bg-bubble text-ink' : 'text-white/60 hover:text-white',
-                  )}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+          <div>
+            <p className="text-2xl font-extrabold">🔁 Backwards!</p>
+            <p className="text-base font-bold text-white/55">
+              This is the sound to copy. Tap the snail to hear it slowly.
+            </p>
           </div>
 
           {!loading && reversedUrl && (
@@ -144,7 +122,6 @@ export function ListenStep({
               url={reversedUrl}
               colour="var(--color-bubble)"
               height={80}
-              playbackRate={rate}
               label="Play it as many times as you like"
             />
           )}
