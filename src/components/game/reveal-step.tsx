@@ -1,19 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, AudioLines, Keyboard, Loader2, RotateCcw, Trash2 } from 'lucide-react'
+import { ArrowRight, AudioLines, Loader2, RefreshCw, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Waveform } from '@/components/waveform'
 import { PlayerChip } from '@/components/player-chip'
-import { StarRating } from '@/components/star-rating'
 import { useClip } from '@/components/use-clip'
 import { compareSignals } from '@/lib/acoustic'
 import { decodeBlob } from '@/lib/audio'
-import { comparePhrases, scoreBand } from '@/lib/similarity'
+import { scoreBand } from '@/lib/score-band'
 import { cn, possessive } from '@/lib/utils'
-import type { Attempt, Player, Round } from '@/store/game-store'
+import { attemptsBy, type Attempt, type Player, type Round } from '@/store/game-store'
 
 interface Props {
   round: Round
@@ -21,7 +19,7 @@ interface Props {
   player: Player
   solo: boolean
   isLastAttempt: boolean
-  onScore: (patch: Partial<Pick<Attempt, 'stars' | 'similarity' | 'guess' | 'guessScore'>>) => void
+  onScore: (patch: Partial<Pick<Attempt, 'similarity'>>) => void
   onRetry: () => void
   onNext: () => void
 }
@@ -39,8 +37,6 @@ export function RevealStep({
   const original = useClip(round.audioId)
   const mine = useClip(attempt.audioId)
   const [unusable, setUnusable] = useState(false)
-  const [showGuess, setShowGuess] = useState(false)
-  const [guess, setGuess] = useState(attempt.guess ?? '')
   const scoreRef = useRef(onScore)
   useEffect(() => {
     scoreRef.current = onScore
@@ -50,6 +46,11 @@ export function RevealStep({
   const band = similarity === undefined ? null : scoreBand(similarity)
   const ready = !!original.clip && !!mine.clip
   const comparing = similarity === undefined && !unusable && ready
+
+  const previous = attemptsBy(round, player.id)
+  const tryNumber = previous.findIndex((a) => a.id === attempt.id) + 1
+  const best = previous.reduce((top, a) => Math.max(top, a.points), 0)
+  const isPersonalBest = similarity !== undefined && similarity >= best && previous.length > 1
 
   /**
    * Score the attempt by comparing how it *sounds* to the original phrase.
@@ -87,15 +88,6 @@ export function RevealStep({
     }
   }, [similarity, original.clip, mine.clip])
 
-  const submitGuess = () => {
-    const text = guess.trim()
-    if (!text || !round.phrase) return
-    onScore({ guess: text, guessScore: comparePhrases(round.phrase, text).score })
-  }
-
-  const words =
-    round.phrase && attempt.guess ? comparePhrases(round.phrase, attempt.guess) : null
-
   return (
     <div className="space-y-5">
       <div className="text-center">
@@ -112,7 +104,9 @@ export function RevealStep({
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center justify-between gap-3">
             <PlayerChip player={player} size="sm" subtitle="backwards" showName={!solo} />
-            <Badge variant="good">The big reveal</Badge>
+            <Badge variant="good">
+              {previous.length > 1 ? `Go ${tryNumber} of ${previous.length}` : 'The big reveal'}
+            </Badge>
           </div>
           {!mine.loading && mine.reversedUrl && (
             <Waveform
@@ -127,128 +121,77 @@ export function RevealStep({
       </Card>
 
       <Card>
-        <CardContent className="space-y-4 p-5">
-          <p className="text-lg font-extrabold text-white/70">Compare with the original</p>
-          {!original.loading && original.forwardUrl && (
-            <Waveform
-              url={original.forwardUrl}
-              colour="var(--color-sky)"
-              height={48}
-              label={`“${round.phrase || 'original phrase'}”`}
-            />
-          )}
-          {!mine.loading && mine.forwardUrl && (
-            <Waveform
-              url={mine.forwardUrl}
-              colour="var(--color-grape)"
-              height={48}
-              label={solo ? 'Your gibberish (forwards)' : `${possessive(player.name)} gibberish (forwards)`}
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
         <CardContent className="space-y-5 p-5">
-          <StarRating
-            label="How close was it?"
-            value={attempt.stars}
-            onChange={(stars) => onScore({ stars })}
-          />
+          {comparing && (
+            <p className="flex items-center justify-center gap-2 text-lg font-extrabold text-white/55">
+              <Loader2 className="size-5 animate-spin" /> Comparing the sounds…
+            </p>
+          )}
 
-          <div className="space-y-3 border-t border-white/10 pt-4">
-            {comparing && (
-              <p className="flex items-center justify-center gap-2 text-lg font-extrabold text-white/55">
-                <Loader2 className="size-5 animate-spin" /> Comparing the sounds…
+          {similarity !== undefined && band && (
+            <div className="animate-pop space-y-2 text-center">
+              <p className="flex items-center justify-center gap-1.5 text-sm font-extrabold uppercase tracking-widest text-white/35">
+                <AudioLines className="size-4" /> Sound match
               </p>
-            )}
-
-            {similarity !== undefined && band && (
-              <div className="animate-pop space-y-2 text-center">
-                <p className="flex items-center justify-center gap-1.5 text-sm font-extrabold uppercase tracking-widest text-white/35">
-                  <AudioLines className="size-4" /> Sound match
-                </p>
-                <p className={cn('text-3xl font-extrabold', band.tone)}>
-                  {band.emoji} {band.label}
-                </p>
-                <Progress
-                  value={similarity}
-                  indicatorClassName={
-                    similarity >= 70 ? 'bg-lime' : similarity >= 40 ? 'bg-sun' : 'bg-tang'
-                  }
-                />
-                <p className="text-lg font-extrabold tabular-nums text-white/70">
-                  {similarity}% like the original
-                </p>
-              </div>
-            )}
-
-            {unusable && (
-              <p className="text-center text-base font-bold text-sun">
-                That one was too quiet to compare — the stars are all yours to give.
+              <p className={cn('text-4xl font-extrabold', band.tone)}>
+                {band.emoji} {band.label}
               </p>
-            )}
-
-            {attempt.guess && (
-              <div className="space-y-1 text-center">
-                <p className="text-base font-bold text-white/50">
-                  You heard: “{attempt.guess}” ({attempt.guessScore}% of the words)
+              <Progress
+                value={similarity}
+                indicatorClassName={
+                  similarity >= 70 ? 'bg-lime' : similarity >= 40 ? 'bg-sun' : 'bg-tang'
+                }
+              />
+              <p className="text-2xl font-extrabold tabular-nums text-white/80">
+                {similarity}% like the original
+              </p>
+              {isPersonalBest && (
+                <p className="flex items-center justify-center gap-1.5 text-base font-extrabold text-sun">
+                  <Trophy className="size-4" /> Your best go yet!
                 </p>
-                {words && words.matchedWords.length > 0 && (
-                  <p className="text-base font-bold text-lime">
-                    Got: {words.matchedWords.join(', ')}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {round.phrase && !showGuess && (
-              <div className="flex justify-center">
-                <Button variant="soft" size="sm" onClick={() => setShowGuess(true)}>
-                  <Keyboard /> Type what you heard
-                </Button>
-              </div>
-            )}
-
-              {showGuess && round.phrase && (
-                <div className="flex gap-2">
-                  <Input
-                    value={guess}
-                    maxLength={80}
-                    placeholder="What did the backwards clip say?"
-                    onChange={(e) => setGuess(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && submitGuess()}
-                    aria-label="What you heard"
-                  />
-                  <Button variant="go" onClick={submitGuess}>
-                    Check
-                  </Button>
-                </div>
               )}
-          </div>
-
-          <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-            <span className="text-lg font-extrabold text-white/60">
-              Points: <span className="text-sun tabular-nums">{attempt.points}</span>
-            </span>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={onRetry}>
-                <Trash2 /> Redo
-              </Button>
             </div>
-          </div>
+          )}
+
+          {unusable && (
+            <p className="text-center text-lg font-bold text-sun">
+              That one was too quiet to compare — have another go!
+            </p>
+          )}
+
+          {previous.length > 1 && (
+            <div className="space-y-2 border-t border-white/10 pt-4">
+              <p className="text-base font-extrabold text-white/50">
+                {solo ? 'Your goes' : `${possessive(player.name)} goes`} — best one counts
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {previous.map((a, i) => (
+                  <span
+                    key={a.id}
+                    className={cn(
+                      'rounded-full px-3 py-1.5 text-base font-extrabold tabular-nums ring-1',
+                      a.points === best
+                        ? 'bg-lime/25 text-lime ring-lime/40'
+                        : 'bg-white/8 text-white/50 ring-white/12',
+                      a.id === attempt.id && 'ring-2 ring-white/60',
+                    )}
+                  >
+                    {i + 1}: {a.similarity === undefined ? '—' : `${a.points}%`}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      <Button variant="sun" size="xl" className="w-full" onClick={onRetry}>
+        <RefreshCw /> Try again
+      </Button>
 
       <Button variant="go" size="xl" className="w-full" onClick={onNext}>
         {isLastAttempt ? 'See the round results' : 'Next player'} <ArrowRight />
       </Button>
-
-      {!round.phrase && (
-        <p className="flex items-center justify-center gap-2 text-center text-base font-bold text-white/40">
-          <RotateCcw className="size-4" /> Add the phrase on the listen screen to also guess it in words.
-        </p>
-      )}
     </div>
   )
 }

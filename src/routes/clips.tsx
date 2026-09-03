@@ -9,7 +9,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Waveform } from '@/components/waveform'
 import { PeakStrip } from '@/components/peak-strip'
 import { PlayerChip } from '@/components/player-chip'
-import { StarRating } from '@/components/star-rating'
 import { useClip } from '@/components/use-clip'
 import { useGameStore, type Game, type Round } from '@/store/game-store'
 import { cn, formatDate, formatDuration } from '@/lib/utils'
@@ -71,8 +70,8 @@ function RoundCard({ game, round, index }: { game: Game; round: Round; index: nu
                   playerName={player.name}
                   colour={player.colour}
                   emoji={player.emoji}
-                  stars={attempt.stars}
                   points={attempt.points}
+                  similarity={attempt.similarity}
                 />
               )
             })}
@@ -92,15 +91,15 @@ function AttemptCard({
   playerName,
   colour,
   emoji,
-  stars,
   points,
+  similarity,
 }: {
   audioId: string
   playerName: string
   colour: string
   emoji: string
-  stars: number
   points: number
+  similarity?: number
 }) {
   const { reversedUrl, clip } = useClip(audioId)
   return (
@@ -109,10 +108,9 @@ function AttemptCard({
         <span className="flex items-center gap-2 text-base font-extrabold">
           <span aria-hidden="true">{emoji}</span> {playerName} <span className="text-white/40">flipped back</span>
         </span>
-        <span className="flex items-center gap-2">
-          <StarRating value={stars} size="sm" />
-          <Badge variant={points >= 60 ? 'good' : 'default'}>{points}</Badge>
-        </span>
+        <Badge variant={points >= 60 ? 'good' : 'default'}>
+          {similarity === undefined ? 'no match' : `${points}%`}
+        </Badge>
       </div>
       {reversedUrl ? (
         <Waveform url={reversedUrl} colour={colour} height={40} />

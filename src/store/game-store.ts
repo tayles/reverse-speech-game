@@ -24,12 +24,7 @@ export interface Attempt {
    * played backwards. Computed automatically, with no transcription involved.
    */
   similarity?: number
-  /** What a player typed as their reading of the backwards clip. */
-  guess?: string
-  /** 0-100 text similarity between that guess and the phrase. */
-  guessScore?: number
-  /** 0-5, awarded by the humans in the room. */
-  stars: number
+  /** The attempt's score: its similarity, or 0 when the clip was unusable. */
   points: number
   createdAt: number
 }
@@ -96,36 +91,26 @@ interface GameState {
   addAttempt: (
     gameId: string,
     roundId: string,
-    attempt: Omit<Attempt, 'id' | 'createdAt' | 'points' | 'stars'> & { stars?: number },
+    attempt: Omit<Attempt, 'id' | 'createdAt' | 'points'>,
   ) => string
   scoreAttempt: (
     gameId: string,
     roundId: string,
     attemptId: string,
-    patch: Partial<Pick<Attempt, 'stars' | 'similarity' | 'guess' | 'guessScore'>>,
+    patch: Partial<Pick<Attempt, 'similarity'>>,
   ) => void
-  deleteAttempt: (gameId: string, roundId: string, attemptId: string) => Promise<void>
 
   updateSettings: (patch: Partial<Settings>) => void
   cleanupOrphanAudio: () => Promise<number>
 }
 
 /**
- * Stars carry the room's judgement, the automatic signals carry the machine's.
- * When both exist they weigh equally; when only one does it stands alone, so a
- * round is never penalised for a score nobody gave.
+ * An attempt scores exactly what it sounded like. A clip too quiet or short to
+ * compare has no similarity yet, and counts as nothing rather than blocking the
+ * round.
  */
-export function computePoints(
-  attempt: Pick<Attempt, 'stars' | 'similarity' | 'guessScore'>,
-): number {
-  const signals = [attempt.similarity, attempt.guessScore].filter(
-    (value): value is number => value !== undefined,
-  )
-  const starPoints = attempt.stars * 20
-  if (signals.length === 0) return starPoints
-  const auto = Math.round(signals.reduce((a, b) => a + b, 0) / signals.length)
-  if (attempt.stars === 0) return auto
-  return Math.round((starPoints + auto) / 2)
+export function computePoints(attempt: Pick<Attempt, 'similarity'>): number {
+  return attempt.similarity ?? 0
 }
 
 const MASTER_BONUS = 10
@@ -327,12 +312,10 @@ export const useGameStore = create<GameState>()(
         set((s) => {
           const game = s.games[gameId]
           if (!game) return s
-          const stars = attempt.stars ?? 0
           const next: Attempt = {
             ...attempt,
             id,
-            stars,
-            points: computePoints({ stars, similarity: attempt.similarity }),
+            points: computePoints(attempt),
             createdAt: Date.now(),
           }
           return {
@@ -376,31 +359,6 @@ export const useGameStore = create<GameState>()(
             },
           }
         })
-      },
-
-      async deleteAttempt(gameId, roundId, attemptId) {
-        const attempt = get()
-          .games[gameId]?.rounds.find((r) => r.id === roundId)
-          ?.attempts.find((a) => a.id === attemptId)
-        set((s) => {
-          const game = s.games[gameId]
-          if (!game) return s
-          return {
-            games: {
-              ...s.games,
-              [gameId]: {
-                ...game,
-                rounds: game.rounds.map((r) =>
-                  r.id === roundId
-                    ? { ...r, attempts: r.attempts.filter((a) => a.id !== attemptId) }
-                    : r,
-                ),
-                updatedAt: Date.now(),
-              },
-            },
-          }
-        })
-        if (attempt) await deleteAudio([attempt.audioId])
       },
 
       updateSettings(patch) {
@@ -469,12 +427,23 @@ export function leaderboard(game: Game): ScoreRow[] {
       host.roundsHosted += 1
       host.points += MASTER_BONUS
     }
+    // Players can have several goes at a round; only their best one counts,
+    // so trying again can never lose you points.
+    const bestThisRound = new Map<string, number>()
     for (const attempt of round.attempts) {
       const row = rows.get(attempt.playerId)
       if (!row) continue
       row.attempts += 1
-      row.points += attempt.points
-      row.bestScore = Math.max(row.bestScore, attempt.points)
+      bestThisRound.set(
+        attempt.playerId,
+        Math.max(bestThisRound.get(attempt.playerId) ?? 0, attempt.points),
+      )
+    }
+    for (const [playerId, best] of bestThisRound) {
+      const row = rows.get(playerId)
+      if (!row) continue
+      row.points += best
+      row.bestScore = Math.max(row.bestScore, best)
     }
   }
   return [...rows.values()].toSorted((a, b) => b.points - a.points || b.bestScore - a.bestScore)
@@ -497,4 +466,17 @@ export function nextMaster(game: Game): Player {
   if (!lastMaster) return game.players[0]
   const index = game.players.findIndex((p) => p.id === lastMaster)
   return game.players[(index + 1) % game.players.length]
+}
+
+/** Every attempt a player made at a round, newest last. */
+export function attemptsBy(round: Round, playerId: string): Attempt[] {
+  return round.attempts.filter((a) => a.playerId === playerId)
+}
+
+/** The attempt that actually counts for a player in a round — their best. */
+export function bestAttempt(round: Round, playerId: string): Attempt | undefined {
+  return attemptsBy(round, playerId).reduce<Attempt | undefined>(
+    (best, a) => (!best || a.points > best.points ? a : best),
+    undefined,
+  )
 }

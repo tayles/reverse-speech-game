@@ -4,36 +4,73 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Waveform } from '@/components/waveform'
 import { PlayerChip } from '@/components/player-chip'
-import { StarRating } from '@/components/star-rating'
 import { Scoreboard } from './scoreboard'
 import { useClip } from '@/components/use-clip'
-import type { Attempt, Game, Round } from '@/store/game-store'
+import { cn } from '@/lib/utils'
+import { attemptsBy, bestAttempt, type Attempt, type Game, type Player, type Round } from '@/store/game-store'
 
-function AttemptRow({ attempt, game }: { attempt: Attempt; game: Game }) {
-  const player = game.players.find((p) => p.id === attempt.playerId)
+function AttemptRow({
+  attempt,
+  player,
+  goNumber,
+  goCount,
+  counts,
+}: {
+  attempt: Attempt
+  player: Player
+  goNumber: number
+  goCount: number
+  counts: boolean
+}) {
   const { reversedUrl, loading } = useClip(attempt.audioId)
-  if (!player) return null
 
   return (
-    <div className="space-y-2 rounded-2xl bg-white/5 p-3">
+    <div
+      className={cn(
+        'space-y-2 rounded-2xl p-3',
+        counts ? 'bg-lime/10 ring-1 ring-lime/30' : 'bg-white/5',
+      )}
+    >
       <div className="flex items-center justify-between gap-3">
-        <PlayerChip player={player} size="sm" />
-        <div className="flex items-center gap-2">
-          <StarRating value={attempt.stars} size="sm" />
-          <Badge variant={attempt.points >= 60 ? 'good' : attempt.points >= 30 ? 'warn' : 'default'}>
-            {attempt.points} pts
-          </Badge>
-        </div>
+        <span className="text-base font-extrabold text-white/70">
+          {goCount > 1 ? `Go ${goNumber}` : 'Their go'}
+          {counts && goCount > 1 && <span className="ml-2 text-sm text-lime">best</span>}
+        </span>
+        <Badge variant={attempt.points >= 60 ? 'good' : attempt.points >= 30 ? 'warn' : 'default'}>
+          {attempt.similarity === undefined ? 'no match' : `${attempt.points}%`}
+        </Badge>
       </div>
       {!loading && reversedUrl && (
         <Waveform url={reversedUrl} colour={player.colour} height={40} showPlayButton />
       )}
-      {attempt.similarity !== undefined && (
-        <p className="text-sm font-bold text-white/45">
-          {attempt.similarity}% sound match
-          {attempt.guess ? ` · heard “${attempt.guess}”` : ''}
-        </p>
-      )}
+    </div>
+  )
+}
+
+/** All of one player's goes at this round, with the scoring one highlighted. */
+function PlayerAttempts({ game, round, player }: { game: Game; round: Round; player: Player }) {
+  const goes = attemptsBy(round, player.id)
+  const best = bestAttempt(round, player.id)
+  if (goes.length === 0) return null
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-3">
+        <PlayerChip player={player} size="sm" showName={game.mode !== 'solo'} />
+        <Badge variant={(best?.points ?? 0) >= 60 ? 'good' : 'default'}>
+          {best?.points ?? 0} pts
+        </Badge>
+      </div>
+      {goes.map((attempt, i) => (
+        <AttemptRow
+          key={attempt.id}
+          attempt={attempt}
+          player={player}
+          goNumber={i + 1}
+          goCount={goes.length}
+          counts={attempt.id === best?.id}
+        />
+      ))}
     </div>
   )
 }
@@ -96,9 +133,9 @@ export function RoundSummary({ game, round, roundNumber, onNextRound, onFinish }
           {round.attempts.length === 0 ? (
             <p className="text-base font-bold text-white/45">Nobody had a turn this round.</p>
           ) : (
-            round.attempts.map((attempt) => (
-              <AttemptRow key={attempt.id} attempt={attempt} game={game} />
-            ))
+            game.players
+              .filter((p) => attemptsBy(round, p.id).length > 0)
+              .map((p) => <PlayerAttempts key={p.id} game={game} round={round} player={p} />)
           )}
         </CardContent>
       </Card>
