@@ -20,6 +20,8 @@ interface RecordButtonProps {
   haptics?: boolean
   /** Show the live speech-to-text caption underneath. */
   showCaption?: boolean
+  /** Trim silence and edge transients off the recording before storing it. */
+  autoClean?: boolean
   disabled?: boolean
 }
 
@@ -45,6 +47,7 @@ export function RecordButton({
   className,
   haptics = true,
   showCaption = true,
+  autoClean = true,
   disabled = false,
 }: RecordButtonProps) {
   const [phase, setPhase] = useState<Phase>(() => (isRecordingSupported() ? 'idle' : 'unsupported'))
@@ -87,7 +90,7 @@ export function RecordButton({
         setPhase('error')
         return
       }
-      const processed = await processRecording(blob)
+      const processed = await processRecording(blob, { autoClean })
       if (processed.duration < 0.25) {
         setError('Too short! Hold on a bit longer.')
         setPhase('error')
@@ -103,7 +106,7 @@ export function RecordButton({
     } finally {
       stoppingRef.current = false
     }
-  }, [cleanupLoop, haptics, onComplete, speechLabels])
+  }, [autoClean, cleanupLoop, haptics, onComplete, speechLabels])
 
   const start = useCallback(async () => {
     if (disabled || phase === 'starting' || phase === 'recording' || phase === 'processing') return

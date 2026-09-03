@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createRoute } from '@tanstack/react-router'
-import { Bot, HardDrive, Mic, Sparkles, Vibrate, Trash2, Download, WifiOff } from 'lucide-react'
+import { Bot, HardDrive, Mic, Scissors, Sparkles, Vibrate, Trash2, Download, WifiOff } from 'lucide-react'
 import { Route as rootRoute } from './__root'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -106,6 +106,14 @@ function SettingsPage() {
 
       <Card>
         <CardContent className="divide-y divide-white/8 p-5">
+          <SettingRow
+            icon={Scissors}
+            title="Tidy up recordings"
+            description="Trim silence and stray taps or button presses off the start and end of every clip."
+            checked={settings.autoClean}
+            onChange={(autoClean) => updateSettings({ autoClean })}
+            note={settings.autoClean ? undefined : 'Clips are kept exactly as recorded.'}
+          />
           <SettingRow
             icon={Sparkles}
             title="Auto-label phrases"

@@ -56,6 +56,11 @@ export interface Game {
 }
 
 export interface Settings {
+  /**
+   * Trim silence and stray transients — button presses, taps, knocks — off the
+   * start and end of every recording before it is stored.
+   */
+  autoClean: boolean
   /** Try to auto-label recordings with the Web Speech API. */
   speechLabels: boolean
   /** Play the reversed attempt aloud and let speech recognition grade it. */
@@ -113,20 +118,23 @@ export function computePoints(attempt: Pick<Attempt, 'stars' | 'autoScore'>): nu
 
 const MASTER_BONUS = 10
 
+export const DEFAULT_SETTINGS: Settings = {
+  autoClean: true,
+  speechLabels: true,
+  robotJudge: false,
+  masterAlsoAttempts: false,
+  maxRecordSeconds: 8,
+  lang: typeof navigator === 'undefined' ? 'en-GB' : navigator.language || 'en-GB',
+  haptics: true,
+}
+
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       games: {},
       gameOrder: [],
       activeGameId: null,
-      settings: {
-        speechLabels: true,
-        robotJudge: false,
-        masterAlsoAttempts: false,
-        maxRecordSeconds: 8,
-        lang: typeof navigator === 'undefined' ? 'en-GB' : navigator.language || 'en-GB',
-        haptics: true,
-      },
+      settings: DEFAULT_SETTINGS,
 
       createGame(mode, players) {
         const id = uid('game')
@@ -409,6 +417,18 @@ export const useGameStore = create<GameState>()(
         activeGameId: s.activeGameId,
         settings: s.settings,
       }),
+      /**
+       * Settings saved before a new option existed would otherwise come back
+       * with that key missing, so layer them over the current defaults.
+       */
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<GameState>
+        return {
+          ...current,
+          ...saved,
+          settings: { ...DEFAULT_SETTINGS, ...saved.settings },
+        }
+      },
     },
   ),
 )
