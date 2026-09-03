@@ -1,3 +1,4 @@
+/** Assigned by seat, not chosen — see the new-game screen. */
 export const AVATARS = [
   '🦊', '🐼', '🐸', '🦄', '🐙', '🐝', '🦖', '🐨',
   '🦁', '🐧', '🦉', '🐬', '🐢', '🦋', '🐰', '🦔',
@@ -10,9 +11,4 @@ export const COLOURS = [
   'var(--color-sun)',
   'var(--color-sky)',
   'var(--color-tang)',
-] as const
-
-export const NAME_IDEAS = [
-  'Zippy', 'Bubbles', 'Nugget', 'Pickle', 'Waffle', 'Sprout',
-  'Doodle', 'Munchkin', 'Pip', 'Bandit', 'Noodle', 'Scout',
 ] as const

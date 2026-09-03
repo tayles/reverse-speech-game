@@ -4,7 +4,9 @@ A silly speech game for kids. Record a phrase, listen to it played backwards,
 then try to copy the backwards sound. Flip *your* recording around — if you got
 it right, your gibberish turns back into the original phrase.
 
-Play solo, or pass the device around with up to eight players.
+Play solo, or pass the device around with up to eight players. Setting up a
+party is one slider and, if you can be bothered, some names — avatars and
+colours are handed out by seat so there is nothing to fiddle with.
 
 ## Quick start
 
@@ -128,5 +130,5 @@ src/
   store/      zustand game store (localStorage-persisted)
   components/ shadcn/ui primitives, waveform, record button, game steps
   routes/     TanStack Router route modules
-  data/       phrase packs and avatars
+  data/       phrase packs, avatars and colours
 ```
