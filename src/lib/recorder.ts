@@ -1,6 +1,12 @@
 import { getAudioContext, unlockAudio } from './audio'
 
-export type RecorderState = 'idle' | 'arming' | 'recording' | 'processing' | 'denied' | 'unsupported'
+export type RecorderState =
+  | 'idle'
+  | 'arming'
+  | 'recording'
+  | 'processing'
+  | 'denied'
+  | 'unsupported'
 
 export interface RecorderHandle {
   stop: () => Promise<Blob>

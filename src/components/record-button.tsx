@@ -162,7 +162,9 @@ export function RecordButton({
 
   if (phase === 'unsupported') {
     return (
-      <div className={cn('rounded-blob bg-white/8 p-6 text-center ring-1 ring-white/12', className)}>
+      <div
+        className={cn('rounded-blob bg-white/8 p-6 text-center ring-1 ring-white/12', className)}
+      >
         <MicOff className="mx-auto mb-3 size-10 text-tang" />
         <p className="text-lg font-bold">This browser can&apos;t record audio.</p>
         <p className="mt-1 text-base text-white/60">Try Chrome, Edge or Safari.</p>
@@ -174,8 +176,19 @@ export function RecordButton({
     <div className={cn('flex flex-col items-center gap-4', className)}>
       <div className="relative grid place-items-center">
         {/* countdown ring */}
-        <svg className="pointer-events-none absolute size-[13.5rem] -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="4" />
+        <svg
+          className="pointer-events-none absolute size-[13.5rem] -rotate-90"
+          viewBox="0 0 100 100"
+          aria-hidden="true"
+        >
+          <circle
+            cx="50"
+            cy="50"
+            r="46"
+            fill="none"
+            stroke="rgba(255,255,255,0.12)"
+            strokeWidth="4"
+          />
           {recording && (
             <circle
               cx="50"

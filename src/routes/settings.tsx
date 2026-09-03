@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { createRoute } from '@tanstack/react-router'
-import { HardDrive, Mic, Scissors, Sparkles, Vibrate, Trash2, Download, WifiOff } from 'lucide-react'
+import {
+  HardDrive,
+  Mic,
+  Scissors,
+  Sparkles,
+  Vibrate,
+  Trash2,
+  Download,
+  WifiOff,
+} from 'lucide-react'
 import { Route as rootRoute } from './__root'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -121,7 +130,9 @@ function SettingsPage() {
             checked={settings.speechLabels}
             onChange={(speechLabels) => updateSettings({ speechLabels })}
             disabled={!speechOk}
-            note={speechOk ? undefined : 'Not available in this browser — you can type phrases instead.'}
+            note={
+              speechOk ? undefined : 'Not available in this browser — you can type phrases instead.'
+            }
           />
           <SettingRow
             icon={Mic}
@@ -175,7 +186,9 @@ function SettingsPage() {
             <HardDrive className="size-5 text-bubble" /> Storage
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge>{gameCount} game{gameCount === 1 ? '' : 's'}</Badge>
+            <Badge>
+              {gameCount} game{gameCount === 1 ? '' : 's'}
+            </Badge>
             {usage && (
               <Badge variant={usage.usedMb / Math.max(1, usage.quotaMb) > 0.8 ? 'hot' : 'default'}>
                 {usage.usedMb.toFixed(1)} MB used
@@ -188,7 +201,12 @@ function SettingsPage() {
               {speechOk ? 'Speech recognition on' : 'No speech recognition'}
             </Badge>
           </div>
-          <Button variant="danger" size="sm" onClick={() => setConfirmWipe(true)} disabled={gameCount === 0}>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setConfirmWipe(true)}
+            disabled={gameCount === 0}
+          >
             <Trash2 /> Delete all games and clips
           </Button>
         </CardContent>
@@ -200,8 +218,8 @@ function SettingsPage() {
             <WifiOff className="size-5 text-lime" /> Works offline
           </p>
           <p className="text-base font-medium text-white/60">
-            Install the game and it keeps working on a plane, in the car, or anywhere with no signal.
-            Recordings never leave your device.
+            Install the game and it keeps working on a plane, in the car, or anywhere with no
+            signal. Recordings never leave your device.
           </p>
           {installEvent ? (
             <Button

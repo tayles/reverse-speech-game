@@ -65,7 +65,13 @@ const hzToMel = (hz: number) => 2595 * Math.log10(1 + hz / 700)
 const melToHz = (mel: number) => 700 * (10 ** (mel / 2595) - 1)
 
 /** Triangular mel filters, as [startBin, endBin, weights] triples. */
-function melFilterbank(sampleRate: number, fftSize: number, bands: number, fMin: number, fMax: number) {
+function melFilterbank(
+  sampleRate: number,
+  fftSize: number,
+  bands: number,
+  fMin: number,
+  fMax: number,
+) {
   const bins = fftSize / 2 + 1
   const top = Math.min(fMax, sampleRate / 2)
   const melMin = hzToMel(fMin)

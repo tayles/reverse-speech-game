@@ -14,8 +14,7 @@ function vowel(seconds: number, f1: number, f2: number, pitch = 120, gain = 0.5)
   for (let i = 0; i < n; i++) {
     const t = i / RATE
     const source = ((t * pitch) % 1) * 2 - 1 // sawtooth glottal pulse
-    const shaped =
-      Math.sin(2 * Math.PI * f1 * t) * 0.6 + Math.sin(2 * Math.PI * f2 * t) * 0.4
+    const shaped = Math.sin(2 * Math.PI * f1 * t) * 0.6 + Math.sin(2 * Math.PI * f2 * t) * 0.4
     out[i] = source * 0.3 * shaped * gain
   }
   return out

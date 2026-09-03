@@ -1,7 +1,21 @@
 /** Assigned by seat, not chosen — see the new-game screen. */
 export const AVATARS = [
-  '🦊', '🐼', '🐸', '🦄', '🐙', '🐝', '🦖', '🐨',
-  '🦁', '🐧', '🦉', '🐬', '🐢', '🦋', '🐰', '🦔',
+  '🦊',
+  '🐼',
+  '🐸',
+  '🦄',
+  '🐙',
+  '🐝',
+  '🦖',
+  '🐨',
+  '🦁',
+  '🐧',
+  '🦉',
+  '🐬',
+  '🐢',
+  '🦋',
+  '🐰',
+  '🦔',
 ] as const
 
 export const COLOURS = [

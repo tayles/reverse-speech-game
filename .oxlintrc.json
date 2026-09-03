@@ -1,12 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "react",
-    "typescript",
-    "unicorn",
-    "oxc",
-    "jsx-a11y"
-  ],
+  "plugins": ["react", "typescript", "unicorn", "oxc", "jsx-a11y"],
   "env": {
     "browser": true,
     "es2024": true
@@ -28,10 +22,5 @@
     "react/no-array-index-key": "off",
     "oxc/no-map-spread": "off"
   },
-  "ignorePatterns": [
-    "dist",
-    "dev-dist",
-    "node_modules",
-    "src/components/ui"
-  ]
+  "ignorePatterns": ["dist", "dev-dist", "node_modules", "src/components/ui"]
 }
