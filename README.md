@@ -35,10 +35,12 @@ bun run test      # unit tests
    be worried at as many times as you like. If the phrase came out wrong, the
    master can re-record it until somebody has taken their turn.
 3. **Reveal** — that attempt is played *backwards*, which should sound like the
-   original phrase. Everyone scores it out of five stars.
-4. **Score** — the attempt is automatically compared with the original by sound
-   and given a match percentage, alongside 20 points per star from the room and
-   10 for hosting the round. The phrase master rotates each round.
+   original phrase, and is scored against it automatically. Nobody has to judge
+   anything.
+4. **Try again, as often as you like** — every go is kept, with its recording
+   and its score, and your best one is the one that counts. Trying again can
+   only ever help. Hosting a round is worth 10 points, and the phrase master
+   rotates each round.
 
 ### Tidying up recordings
 
@@ -85,10 +87,9 @@ and vowels scores well, and two different speakers will never score as highly
 as the same person twice. That is the right shape for the game — you are being
 marked on your impression.
 
-**Type what you heard** is still there as a separate, optional signal: someone
-reads the backwards clip aloud in words, and that guess is compared against the
-phrase by edit distance plus per-word recall. When both signals exist they
-weigh equally, and stars from the room weigh equally against their average.
+The score is the whole of it — there are no stars to award and nothing to type.
+A clip too quiet or too short to compare says so rather than inventing a number,
+and you can simply have another go.
 
 ## Offline and privacy
 

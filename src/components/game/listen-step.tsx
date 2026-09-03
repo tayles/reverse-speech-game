@@ -18,6 +18,8 @@ interface Props {
   player: Player
   attemptsDone: number
   attemptsTotal: number
+  /** This player already had a go and is having another. */
+  retry: boolean
   solo: boolean
   settings: Settings
   /** Re-recording the phrase is only offered while it would spoil nobody's go. */
@@ -39,6 +41,7 @@ export function ListenStep({
   player,
   attemptsDone,
   attemptsTotal,
+  retry,
   solo,
   settings,
   canRerecord,
@@ -63,58 +66,10 @@ export function ListenStep({
           {attemptsTotal > 1 &&
             ` · go ${Math.min(attemptsDone + 1, attemptsTotal)} of ${attemptsTotal}`}
         </p>
-        <h2 className="mt-1 text-3xl font-extrabold tracking-tight">Listen carefully!</h2>
+        <h2 className="mt-1 text-3xl font-extrabold tracking-tight">
+          {retry ? 'Have another go!' : 'Listen carefully!'}
+        </h2>
       </div>
-
-      <Card className="ring-2 ring-bubble/50">
-        <CardContent className="space-y-4 p-5">
-          <div>
-            <p className="text-2xl font-extrabold">🔁 Backwards!</p>
-            <p className="text-base font-bold text-white/55">
-              This is the sound to copy. Tap the snail to hear it slowly, or tap anywhere on the
-              wave to start from there.
-            </p>
-          </div>
-
-          {missing && (
-            <p className="rounded-2xl bg-tang/20 p-3 text-center text-base font-bold text-tang">
-              That recording has gone missing from this device.
-            </p>
-          )}
-
-          {!loading && reversedUrl && (
-            <Waveform
-              url={reversedUrl}
-              colour="var(--color-bubble)"
-              height={80}
-              autoPlay
-              label="Play it as many times as you like"
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="text-center">
-        <PlayerChip player={player} size="lg" showName={false} className="justify-center" />
-        <h3 className="mt-2 text-3xl font-extrabold tracking-tight">
-          {solo ? 'Copy the gibberish!' : `Go on ${player.name} — copy the gibberish!`}
-        </h3>
-        <p className="mx-auto mt-1 max-w-sm text-lg font-bold text-white/60">
-          Make the same sounds you just heard. Don&apos;t say the real phrase!
-        </p>
-      </div>
-
-      <RecordButton
-        maxSeconds={settings.maxRecordSeconds + 3}
-        /* The attempt is deliberate gibberish, so auto-labelling would be noise. */
-        speechLabels={false}
-        haptics={settings.haptics}
-        autoClean={settings.autoClean}
-        colour={player.colour}
-        idleLabel="Tap and make the sound"
-        showCaption={false}
-        onComplete={onRecorded}
-      />
 
       <Card>
         <CardContent className="space-y-4 p-5">
@@ -166,10 +121,60 @@ export function ListenStep({
       </Card>
 
       {canRerecord && (
-        <Button variant="soft" size="lg" className="w-full" onClick={onRerecord}>
+        <Button variant="sun" size="xl" className="w-full" onClick={onRerecord}>
           <RotateCcw /> Re-record the phrase
         </Button>
       )}
+
+      <Card className="ring-2 ring-bubble/50">
+        <CardContent className="space-y-4 p-5">
+          <div>
+            <p className="text-2xl font-extrabold">🔁 Backwards!</p>
+            <p className="text-base font-bold text-white/55">
+              This is the sound to copy. Tap the snail to hear it slowly, or tap anywhere on the
+              wave to start from there.
+            </p>
+          </div>
+
+          {missing && (
+            <p className="rounded-2xl bg-tang/20 p-3 text-center text-base font-bold text-tang">
+              That recording has gone missing from this device.
+            </p>
+          )}
+
+          {!loading && reversedUrl && (
+            <Waveform
+              url={reversedUrl}
+              colour="var(--color-bubble)"
+              height={80}
+              autoPlay
+              label="Play it as many times as you like"
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="text-center">
+        <PlayerChip player={player} size="lg" showName={false} className="justify-center" />
+        <h3 className="mt-2 text-3xl font-extrabold tracking-tight">
+          {solo ? 'Copy the gibberish!' : `Go on ${player.name} — copy the gibberish!`}
+        </h3>
+        <p className="mx-auto mt-1 max-w-sm text-lg font-bold text-white/60">
+          Make the same sounds you just heard. Don&apos;t say the real phrase!
+        </p>
+      </div>
+
+      <RecordButton
+        maxSeconds={settings.maxRecordSeconds + 3}
+        /* The attempt is deliberate gibberish, so auto-labelling would be noise. */
+        speechLabels={false}
+        haptics={settings.haptics}
+        autoClean={settings.autoClean}
+        colour={player.colour}
+        idleLabel="Tap and make the sound"
+        showCaption={false}
+        onComplete={onRecorded}
+      />
     </div>
   )
 }

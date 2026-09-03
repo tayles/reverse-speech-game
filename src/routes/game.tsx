@@ -23,8 +23,12 @@ import type { RecordingResult } from '@/components/record-button'
 
 type Phase =
   | { kind: 'record-phrase' }
-  /** Hearing the backwards clip and copying it — one page, not two. */
-  | { kind: 'listen'; roundId: string }
+  /**
+   * Hearing the backwards clip and copying it — one page, not two.
+   * `retryFor` forces a player back on when they already have an attempt,
+   * which is how "try again" works without throwing the earlier go away.
+   */
+  | { kind: 'listen'; roundId: string; retryFor?: string }
   | { kind: 'reveal'; roundId: string; attemptId: string }
   | { kind: 'summary'; roundId: string }
 
@@ -46,7 +50,6 @@ function GamePage() {
   const updateRoundPhrase = useGameStore((s) => s.updateRoundPhrase)
   const addAttempt = useGameStore((s) => s.addAttempt)
   const scoreAttempt = useGameStore((s) => s.scoreAttempt)
-  const deleteAttempt = useGameStore((s) => s.deleteAttempt)
   const deleteRound = useGameStore((s) => s.deleteRound)
   const finishGame = useGameStore((s) => s.finishGame)
   const reopenGame = useGameStore((s) => s.reopenGame)
@@ -74,6 +77,12 @@ function GamePage() {
     () => (game && round ? roundTurn(game, round, settings.masterAlsoAttempts) : undefined),
     [game, round, settings.masterAlsoAttempts],
   )
+
+  const recordingPlayer = useMemo(() => {
+    if (!game || phase.kind !== 'listen') return undefined
+    if (phase.retryFor) return game.players.find((p) => p.id === phase.retryFor)
+    return turn?.current
+  }, [game, phase, turn])
 
   const handlePhraseRecorded = useCallback(
     async (result: RecordingResult, suggestion: string | null) => {
@@ -164,14 +173,15 @@ function GamePage() {
         />
       )}
 
-      {phase.kind === 'listen' && round && master && turn && turn.current && (
+      {phase.kind === 'listen' && round && master && turn && recordingPlayer && (
         <ListenStep
           round={round}
           roundNumber={roundNumber}
           master={master}
-          player={turn.current}
-          attemptsDone={round.attempts.length}
+          player={recordingPlayer}
+          attemptsDone={turn.eligible.length - turn.remaining.length}
           attemptsTotal={turn.eligible.length}
+          retry={phase.kind === 'listen' && !!phase.retryFor}
           solo={solo}
           settings={settings}
           canRerecord={round.attempts.length === 0}
@@ -180,7 +190,7 @@ function GamePage() {
             void deleteRound(game.id, round.id)
             setPhase({ kind: 'record-phrase' })
           }}
-          onRecorded={(result) => handleAttemptRecorded(result, turn.current!.id, round.id)}
+          onRecorded={(result) => handleAttemptRecorded(result, recordingPlayer.id, round.id)}
         />
       )}
 
@@ -192,10 +202,9 @@ function GamePage() {
           solo={solo}
           isLastAttempt={turn.remaining.length === 0}
           onScore={(patch) => scoreAttempt(game.id, round.id, attempt.id, patch)}
-          onRetry={() => {
-            void deleteAttempt(game.id, round.id, attempt.id)
-            setPhase({ kind: 'listen', roundId: round.id })
-          }}
+          onRetry={() =>
+            setPhase({ kind: 'listen', roundId: round.id, retryFor: attempt.playerId })
+          }
           onNext={advanceFromReveal}
         />
       )}
