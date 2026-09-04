@@ -29,13 +29,20 @@ bun run dev
 Then open the printed URL. Allow microphone access when asked.
 
 ```bash
+bun run fix           # format and fix lint findings, in place — the usual one
 bun run build         # type-check + production bundle into dist/
-bun run preview       # serve the production build
-bun run lint          # oxlint
-bun run format        # oxfmt, in place
-bun run format:check  # oxfmt, no writes — what CI runs
-bun run typecheck     # tsc alone
 bun run test          # unit tests
+bun run preview       # serve the production build
+```
+
+`fix` covers day-to-day tidying. The rest exist mostly for CI, and are there
+when you want to look without anything being rewritten:
+
+```bash
+bun run check         # fmt + lint, no writes
+bun run fmt           # oxfmt, check only        (fmt:fix writes)
+bun run lint          # oxlint, type-aware       (lint:fix writes)
+bun run typecheck     # tsc alone
 ```
 
 Artwork is committed already compressed. After adding or replacing an image:
