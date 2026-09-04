@@ -1,5 +1,8 @@
 # Backwards Brain
 
+![Backwards Brain: record a phrase, hear it backwards, copy the sound, then flip
+back and check.](public/screenshots/opengraph.png)
+
 <img src="public/icon-512.png" align="right" width="132" alt="">
 
 A silly speech game for kids. Record a phrase, listen to it played backwards,
