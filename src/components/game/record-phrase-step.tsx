@@ -1,8 +1,9 @@
-import { useState } from 'react'
 import { RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+
 import { PlayerChip } from '@/components/player-chip'
 import { RecordButton, type RecordingResult } from '@/components/record-button'
+import { Button } from '@/components/ui/button'
 import { PHRASE_IDEAS } from '@/data/phrases'
 import { pickRandom } from '@/lib/utils'
 import type { Player, Settings } from '@/store/game-store'
@@ -29,7 +30,7 @@ export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecord
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <p className="text-sm font-extrabold uppercase tracking-widest text-white/40">
+        <p className="text-sm font-extrabold tracking-widest text-white/40 uppercase">
           Round {roundNumber}
         </p>
         <div className="mt-3 flex flex-col items-center gap-2">
@@ -61,7 +62,7 @@ export function RecordPhraseStep({ master, roundNumber, settings, solo, onRecord
           Need an idea? Try {/* Quotes ride along inside, so a wrap never strands one. */}
           <span
             key={suggestion}
-            className="inline-block animate-pop whitespace-nowrap text-xl font-extrabold text-sun"
+            className="inline-block animate-pop text-xl font-extrabold whitespace-nowrap text-sun"
           >
             “{suggestion}”
           </span>

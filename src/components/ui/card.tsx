@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { cn } from '@/lib/utils'
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -6,7 +7,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        'rounded-blob bg-white/8 ring-1 ring-white/12 backdrop-blur-md shadow-[0_10px_40px_-12px_rgba(0,0,0,0.5)]',
+        'rounded-blob bg-white/8 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.5)] ring-1 ring-white/12 backdrop-blur-md',
         className,
       )}
       {...props}

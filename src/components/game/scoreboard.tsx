@@ -1,9 +1,10 @@
 import { Trophy } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+
 import { PlayerChip } from '@/components/player-chip'
+import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { leaderboard, type Game } from '@/store/game-store'
 import { cn, plural } from '@/lib/utils'
+import { leaderboard, type Game } from '@/store/game-store'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
@@ -22,7 +23,7 @@ export function Scoreboard({ game, compact = false }: { game: Game; compact?: bo
             subtitle={plural(row.attempts, 'try', 'tries')}
           />
           <div className="text-right">
-            <p className="text-4xl font-extrabold tabular-nums text-sun">{row.points}</p>
+            <p className="text-4xl font-extrabold text-sun tabular-nums">{row.points}</p>
             <p className="text-sm font-bold text-white/45">points</p>
           </div>
         </CardContent>
@@ -47,7 +48,7 @@ export function Scoreboard({ game, compact = false }: { game: Game; compact?: bo
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="truncate text-base font-extrabold">{row.player.name}</span>
-                <span className="shrink-0 text-lg font-extrabold tabular-nums text-sun">
+                <span className="shrink-0 text-lg font-extrabold text-sun tabular-nums">
                   {row.points}
                 </span>
               </div>

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+
 import { findContentBounds } from './audio'
 
 const RATE = 22_050

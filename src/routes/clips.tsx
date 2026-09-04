@@ -1,17 +1,19 @@
-import { useMemo, useState } from 'react'
 import { createRoute, Link } from '@tanstack/react-router'
 import { Library, Trash2, ChevronDown } from 'lucide-react'
-import { Route as rootRoute } from './__root'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Waveform } from '@/components/waveform'
+import { useMemo, useState } from 'react'
+
 import { PeakStrip } from '@/components/peak-strip'
 import { PlayerChip } from '@/components/player-chip'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useClip } from '@/components/use-clip'
-import { useGameStore, type Game, type Round } from '@/store/game-store'
+import { Waveform } from '@/components/waveform'
 import { cn, formatDate, formatDuration } from '@/lib/utils'
+import { useGameStore, type Game, type Round } from '@/store/game-store'
+
+import { Route as rootRoute } from './__root'
 
 function RoundCard({ game, round, index }: { game: Game; round: Round; index: number }) {
   const [open, setOpen] = useState(false)
@@ -26,7 +28,7 @@ function RoundCard({ game, round, index }: { game: Game; round: Round; index: nu
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="flex w-full items-center gap-3 rounded-2xl text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+          className="flex w-full items-center gap-3 rounded-2xl text-left focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:outline-none"
         >
           <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-xl font-extrabold text-white/60">
             {index + 1}
@@ -180,7 +182,7 @@ function ClipsPage() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <div className="scrollbar-none -mx-4 overflow-x-auto px-4">
+        <div className="-mx-4 scrollbar-none overflow-x-auto px-4">
           <TabsList className="w-auto min-w-full">
             {withRounds.map((game) => (
               <TabsTrigger key={game.id} value={game.id} className="flex-none px-4">

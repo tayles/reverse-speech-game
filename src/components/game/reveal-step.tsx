@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, AudioLines, Loader2, RefreshCw, Trophy } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+
+import { PlayerChip } from '@/components/player-chip'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Waveform } from '@/components/waveform'
-import { PlayerChip } from '@/components/player-chip'
 import { useClip } from '@/components/use-clip'
+import { Waveform } from '@/components/waveform'
 import { compareSignals } from '@/lib/acoustic'
 import { decodeBlob } from '@/lib/audio'
 import { scoreBand } from '@/lib/score-band'
@@ -134,7 +135,7 @@ export function RevealStep({
 
           {similarity !== undefined && band && (
             <div className="animate-pop space-y-2 text-center">
-              <p className="flex items-center justify-center gap-1.5 text-sm font-extrabold uppercase tracking-widest text-white/35">
+              <p className="flex items-center justify-center gap-1.5 text-sm font-extrabold tracking-widest text-white/35 uppercase">
                 <AudioLines className="size-4" /> Sound match
               </p>
               <p className={cn('text-4xl font-extrabold', band.tone)}>
@@ -146,7 +147,7 @@ export function RevealStep({
                   similarity >= 70 ? 'bg-lime' : similarity >= 40 ? 'bg-sun' : 'bg-tang'
                 }
               />
-              <p className="text-2xl font-extrabold tabular-nums text-white/80">
+              <p className="text-2xl font-extrabold text-white/80 tabular-nums">
                 {similarity}% like the original
               </p>
               {isPersonalBest && (

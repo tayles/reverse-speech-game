@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { createRoute } from '@tanstack/react-router'
 import {
   HardDrive,
@@ -10,12 +9,11 @@ import {
   Download,
   WifiOff,
 } from 'lucide-react'
-import { Route as rootRoute } from './__root'
+import { useEffect, useState } from 'react'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -25,11 +23,15 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog'
-import { useGameStore } from '@/store/game-store'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { estimateUsage } from '@/lib/db'
-import { isSpeechRecognitionSupported } from '@/lib/speech'
 import { isRecordingSupported } from '@/lib/recorder'
+import { isSpeechRecognitionSupported } from '@/lib/speech'
 import { cn } from '@/lib/utils'
+import { useGameStore } from '@/store/game-store'
+
+import { Route as rootRoute } from './__root'
 
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>

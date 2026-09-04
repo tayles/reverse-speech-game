@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { uid } from '@/lib/utils'
+
 import { AVATARS, COLOURS } from '@/data/players'
 import { deleteAudio, pruneAudio } from '@/lib/db'
+import { uid } from '@/lib/utils'
 
 export type GameMode = 'solo' | 'party'
 

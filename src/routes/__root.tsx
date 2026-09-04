@@ -1,10 +1,11 @@
 import { Link, Outlet, createRootRoute, useRouterState } from '@tanstack/react-router'
 import { Home, Library, Settings2, WifiOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { cn } from '@/lib/utils'
-import { requestPersistence } from '@/lib/db'
-import { useGameStore } from '@/store/game-store'
+
 import micBadge from '@/assets/mic-badge.png'
+import { requestPersistence } from '@/lib/db'
+import { cn } from '@/lib/utils'
+import { useGameStore } from '@/store/game-store'
 
 function useOnline() {
   const [online, setOnline] = useState(() =>
@@ -46,11 +47,11 @@ function RootLayout() {
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
           <Link
             to="/"
-            className="flex items-center gap-2.5 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+            className="flex items-center gap-2.5 rounded-2xl focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:outline-none"
           >
             <img src={micBadge} alt="" className="h-11 w-auto shrink-0 drop-shadow-lg" />
             <span className="leading-none">
-              <span className="block whitespace-nowrap text-lg font-extrabold tracking-tight sm:text-xl">
+              <span className="block text-lg font-extrabold tracking-tight whitespace-nowrap sm:text-xl">
                 Backwards Brain
               </span>
               <span className="hidden text-xs font-bold text-white/45 min-[380px]:block">
@@ -73,7 +74,7 @@ function RootLayout() {
                     key={to}
                     to={to}
                     className={cn(
-                      'flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-extrabold text-white/60 transition hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40',
+                      'flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-extrabold text-white/60 transition hover:text-white focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:outline-none',
                     )}
                     activeProps={{ className: 'bg-grape !text-white shadow' }}
                     activeOptions={{ exact: to === '/' }}

@@ -1,8 +1,9 @@
+import { Play, Pause, Loader2, Snail } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import WaveSurfer from 'wavesurfer.js'
-import { Play, Pause, Loader2, Snail } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 import { unlockAudio } from '@/lib/audio'
+import { cn } from '@/lib/utils'
 import { formatDuration } from '@/lib/utils'
 
 /**
@@ -206,7 +207,7 @@ export function Waveform({
             {label && (
               <span className="truncate text-base font-extrabold text-white/85">{label}</span>
             )}
-            <span className="shrink-0 text-sm font-bold tabular-nums text-white/45">
+            <span className="shrink-0 text-sm font-bold text-white/45 tabular-nums">
               {sublabel ?? (duration ? formatDuration(duration) : '')}
             </span>
           </div>

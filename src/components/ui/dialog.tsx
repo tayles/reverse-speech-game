@@ -1,6 +1,7 @@
-import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
+import * as React from 'react'
+
 import { cn } from '@/lib/utils'
 
 const Dialog = DialogPrimitive.Root
@@ -16,14 +17,14 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-1/2 top-1/2 z-50 grid w-[min(34rem,calc(100vw-1.5rem))] max-h-[88svh] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-blob bg-[var(--card)] p-6 ring-1 ring-white/15 shadow-2xl data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:zoom-in-95',
+        'fixed top-1/2 left-1/2 z-50 grid max-h-[88svh] w-[min(34rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-blob bg-[var(--card)] p-6 shadow-2xl ring-1 ring-white/15 data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:zoom-in-95',
         className,
       )}
       {...props}
     >
       {children}
       {!hideClose && (
-        <DialogPrimitive.Close className="absolute right-4 top-4 grid size-10 place-items-center rounded-2xl bg-white/10 text-white/70 transition hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
+        <DialogPrimitive.Close className="absolute top-4 right-4 grid size-10 place-items-center rounded-2xl bg-white/10 text-white/70 transition hover:bg-white/20 hover:text-white focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:outline-none">
           <X className="size-5" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

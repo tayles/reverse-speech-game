@@ -1,5 +1,5 @@
-import type { Player } from '@/store/game-store'
 import { cn } from '@/lib/utils'
+import type { Player } from '@/store/game-store'
 
 export function PlayerChip({
   player,

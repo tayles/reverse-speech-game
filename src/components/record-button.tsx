@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { Mic, Square, Loader2, MicOff } from 'lucide-react'
-import { cn, clamp } from '@/lib/utils'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { processRecording, type ProcessedClip } from '@/lib/audio'
 import { isRecordingSupported, startRecording, type RecorderHandle } from '@/lib/recorder'
 import { isSpeechRecognitionSupported, startSpeechSession, type SpeechSession } from '@/lib/speech'
-import { processRecording, type ProcessedClip } from '@/lib/audio'
+import { cn, clamp } from '@/lib/utils'
 
 export interface RecordingResult extends ProcessedClip {
   transcript: string
@@ -220,9 +221,9 @@ export function RecordButton({
              * A round key presses convincingly by shrinking instead — which
              * keeps it concentric — lighting up on hover and sinking on click.
              */
-            'shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:brightness-110 hover:ring-8 hover:ring-white/25',
+            'shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:ring-8 hover:ring-white/25 hover:brightness-110',
             'active:scale-95 active:shadow-[0_5px_0_0_rgba(0,0,0,0.35)]',
-            'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60',
+            'focus-visible:ring-4 focus-visible:ring-white/60 focus-visible:outline-none',
             recording && 'animate-pulse-ring',
             (busy || disabled) && 'opacity-60',
           )}
@@ -243,7 +244,7 @@ export function RecordButton({
 
       <div className="min-h-[3.5rem] text-center">
         {recording ? (
-          <p className="text-2xl font-extrabold tabular-nums text-tang">
+          <p className="text-2xl font-extrabold text-tang tabular-nums">
             {remaining.toFixed(1)}s left — tap to stop
           </p>
         ) : phase === 'processing' ? (
