@@ -46,7 +46,7 @@ describe('mfccSequence', () => {
   test('produces frames of the requested width', () => {
     const frames = mfccSequence(AH(), RATE)
     expect(frames.length).toBeGreaterThan(5)
-    expect(frames[0].length).toBe(12)
+    expect(frames[0]!.length).toBe(12)
   })
 
   test('returns nothing for a signal shorter than one frame', () => {

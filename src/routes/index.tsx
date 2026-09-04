@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { SOLO_PLAYER } from '@/data/players'
 import { unlockAudio } from '@/lib/audio'
-import { formatDate } from '@/lib/utils'
+import { formatDate, isDefined } from '@/lib/utils'
 import { useGameStore, leaderboard } from '@/store/game-store'
 
 import { Route as rootRoute } from './__root'
@@ -44,7 +44,7 @@ function HomePage() {
 
   const recent = gameOrder
     .map((id) => games[id])
-    .filter(Boolean)
+    .filter(isDefined)
     .slice(0, 6)
   const active = recent.find((g) => g.status === 'active' && g.rounds.length > 0)
 

@@ -67,9 +67,10 @@ function GamePage() {
     return game.rounds.find((r) => r.id === phase.roundId)
   }, [game, phase])
 
-  const roundNumber = round
-    ? game.rounds.findIndex((r) => r.id === round.id) + 1
-    : (game?.rounds.length ?? 0) + 1
+  const roundNumber =
+    round && game
+      ? game.rounds.findIndex((r) => r.id === round.id) + 1
+      : (game?.rounds.length ?? 0) + 1
 
   const master = useMemo(() => {
     if (!game) return undefined

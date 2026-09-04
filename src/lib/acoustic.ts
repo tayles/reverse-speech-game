@@ -28,8 +28,12 @@ function fft(re: Float32Array, im: Float32Array): void {
     for (; j & bit; bit >>= 1) j ^= bit
     j ^= bit
     if (i < j) {
-      ;[re[i], re[j]] = [re[j], re[i]]
-      ;[im[i], im[j]] = [im[j], im[i]]
+      const swapRe = re[i]!
+      const swapIm = im[i]!
+      re[i] = re[j]!
+      im[i] = im[j]!
+      re[j] = swapRe
+      im[j] = swapIm
     }
   }
 
@@ -41,10 +45,10 @@ function fft(re: Float32Array, im: Float32Array): void {
       let curRe = 1
       let curIm = 0
       for (let k = 0; k < len / 2; k++) {
-        const aRe = re[i + k]
-        const aIm = im[i + k]
-        const bRe = re[i + k + len / 2] * curRe - im[i + k + len / 2] * curIm
-        const bIm = re[i + k + len / 2] * curIm + im[i + k + len / 2] * curRe
+        const aRe = re[i + k]!
+        const aIm = im[i + k]!
+        const bRe = re[i + k + len / 2]! * curRe - im[i + k + len / 2]! * curIm
+        const bIm = re[i + k + len / 2]! * curIm + im[i + k + len / 2]! * curRe
         re[i + k] = aRe + bRe
         im[i + k] = aIm + bIm
         re[i + k + len / 2] = aRe - bRe
@@ -84,9 +88,9 @@ function melFilterbank(
 
   const filters: { start: number; weights: Float32Array }[] = []
   for (let b = 1; b <= bands; b++) {
-    const left = points[b - 1]
-    const centre = points[b]
-    const right = Math.min(points[b + 1], bins - 1)
+    const left = points[b - 1]!
+    const centre = points[b]!
+    const right = Math.min(points[b + 1]!, bins - 1)
     const width = Math.max(1, right - left)
     const weights = new Float32Array(width)
     for (let k = 0; k < width; k++) {
@@ -150,7 +154,7 @@ export function mfccSequence(
 
   let peak = 0
   for (let i = 0; i < samples.length; i++) {
-    const magnitude = Math.abs(samples[i])
+    const magnitude = Math.abs(samples[i]!)
     if (magnitude > peak) peak = magnitude
   }
   if (peak < 1e-4) return [] // silence carries no spectral shape to compare
@@ -170,17 +174,17 @@ export function mfccSequence(
   for (let f = 0; f < frameCount; f++) {
     const offset = f * hopSize
     im.fill(0)
-    for (let i = 0; i < fftSize; i++) re[i] = samples[offset + i] * window[i]
+    for (let i = 0; i < fftSize; i++) re[i] = samples[offset + i]! * window[i]!
     fft(re, im)
 
     const melEnergies = new Float32Array(bands)
     let total = 0
     for (let b = 0; b < bands; b++) {
-      const { start, weights } = filters[b]
+      const { start, weights } = filters[b]!
       let sum = 0
       for (let k = 0; k < weights.length; k++) {
         const bin = start + k
-        sum += (re[bin] * re[bin] + im[bin] * im[bin]) * weights[k]
+        sum += (re[bin]! * re[bin]! + im[bin]! * im[bin]!) * weights[k]!
       }
       melEnergies[b] = Math.log(sum + 1e-10)
       total += sum
@@ -193,7 +197,7 @@ export function mfccSequence(
     for (let c = 0; c < coefficients; c++) {
       let sum = 0
       for (let b = 0; b < bands; b++) {
-        sum += melEnergies[b] * Math.cos((Math.PI * (c + 1) * (b + 0.5)) / bands)
+        sum += melEnergies[b]! * Math.cos((Math.PI * (c + 1) * (b + 0.5)) / bands)
       }
       cepstrum[c] = sum
     }
@@ -202,7 +206,7 @@ export function mfccSequence(
 
   if (frames.length === 0) return frames
   const loudest = Math.max(...energies)
-  const kept = frames.filter((_, i) => energies[i] >= loudest - silenceFloorDb)
+  const kept = frames.filter((_, i) => energies[i]! >= loudest - silenceFloorDb)
   return kept.length >= 3 ? kept : frames
 }
 
@@ -213,20 +217,20 @@ export function mfccSequence(
  */
 export function normaliseFrames(frames: Float32Array[]): Float32Array[] {
   if (frames.length === 0) return frames
-  const dims = frames[0].length
+  const dims = frames[0]!.length
   const mean = new Float32Array(dims)
   const variance = new Float32Array(dims)
 
-  for (const frame of frames) for (let d = 0; d < dims; d++) mean[d] += frame[d]
-  for (let d = 0; d < dims; d++) mean[d] /= frames.length
+  for (const frame of frames) for (let d = 0; d < dims; d++) mean[d]! += frame[d]!
+  for (let d = 0; d < dims; d++) mean[d]! /= frames.length
   for (const frame of frames) {
-    for (let d = 0; d < dims; d++) variance[d] += (frame[d] - mean[d]) ** 2
+    for (let d = 0; d < dims; d++) variance[d]! += (frame[d]! - mean[d]!) ** 2
   }
-  for (let d = 0; d < dims; d++) variance[d] = Math.sqrt(variance[d] / frames.length) || 1
+  for (let d = 0; d < dims; d++) variance[d] = Math.sqrt(variance[d]! / frames.length) || 1
 
   return frames.map((frame) => {
     const out = new Float32Array(dims)
-    for (let d = 0; d < dims; d++) out[d] = (frame[d] - mean[d]) / variance[d]
+    for (let d = 0; d < dims; d++) out[d] = (frame[d]! - mean[d]!) / variance[d]!
     return out
   })
 }
@@ -240,9 +244,9 @@ function cosineDistance(a: Float32Array, b: Float32Array): number {
   let na = 0
   let nb = 0
   for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i]
-    na += a[i] * a[i]
-    nb += b[i] * b[i]
+    dot += a[i]! * b[i]!
+    na += a[i]! * a[i]!
+    nb += b[i]! * b[i]!
   }
   const denominator = Math.sqrt(na) * Math.sqrt(nb)
   return denominator < 1e-9 ? 1 : 1 - dot / denominator
@@ -277,16 +281,16 @@ export function dtwDistance(a: Float32Array[], b: Float32Array[]): number {
     const from = Math.max(1, i - band)
     const to = Math.min(m, i + band)
     for (let j = from; j <= to; j++) {
-      const cost = cosineDistance(a[i - 1], b[j - 1])
-      let best = prevCost[j - 1]
-      let steps = prevSteps[j - 1]
-      if (prevCost[j] < best) {
-        best = prevCost[j]
-        steps = prevSteps[j]
+      const cost = cosineDistance(a[i - 1]!, b[j - 1]!)
+      let best = prevCost[j - 1]!
+      let steps = prevSteps[j - 1]!
+      if (prevCost[j]! < best) {
+        best = prevCost[j]!
+        steps = prevSteps[j]!
       }
-      if (currCost[j - 1] < best) {
-        best = currCost[j - 1]
-        steps = currSteps[j - 1]
+      if (currCost[j - 1]! < best) {
+        best = currCost[j - 1]!
+        steps = currSteps[j - 1]!
       }
       if (best === INF) continue
       currCost[j] = cost + best
@@ -296,8 +300,8 @@ export function dtwDistance(a: Float32Array[], b: Float32Array[]): number {
     ;[prevSteps, currSteps] = [currSteps, prevSteps]
   }
 
-  const total = prevCost[m]
-  const steps = prevSteps[m]
+  const total = prevCost[m]!
+  const steps = prevSteps[m]!
   return Number.isFinite(total) && steps > 0 ? total / steps : INF
 }
 

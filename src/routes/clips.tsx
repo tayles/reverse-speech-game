@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useClip } from '@/components/use-clip'
 import { Waveform } from '@/components/waveform'
-import { cn, formatDate, formatDuration } from '@/lib/utils'
+import { cn, formatDate, formatDuration, isDefined } from '@/lib/utils'
 import { useGameStore, type Game, type Round } from '@/store/game-store'
 
 import { Route as rootRoute } from './__root'
@@ -117,7 +117,7 @@ function AttemptCard({
   colour: string
   emoji: string
   points: number
-  similarity?: number
+  similarity?: number | undefined
 }) {
   const { reversedUrl, clip } = useClip(audioId)
   return (
@@ -143,7 +143,7 @@ function AttemptCard({
 function ClipsPage() {
   const games = useGameStore((s) => s.games)
   const gameOrder = useGameStore((s) => s.gameOrder)
-  const list = useMemo(() => gameOrder.map((id) => games[id]).filter(Boolean), [gameOrder, games])
+  const list = useMemo(() => gameOrder.map((id) => games[id]).filter(isDefined), [gameOrder, games])
   const withRounds = list.filter((g) => g.rounds.length > 0)
   const [tab, setTab] = useState<string>(() => withRounds[0]?.id ?? '')
 

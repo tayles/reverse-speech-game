@@ -17,8 +17,8 @@ const MIN_PLAYERS = 1
 const MAX_PLAYERS = 8
 
 /** Avatars and colours come from the seat; only the name is anybody's business. */
-const avatarFor = (index: number) => AVATARS[index % AVATARS.length]
-const colourFor = (index: number) => COLOURS[index % COLOURS.length]
+const avatarFor = (index: number) => AVATARS[index % AVATARS.length] ?? AVATARS[0]
+const colourFor = (index: number) => COLOURS[index % COLOURS.length] ?? COLOURS[0]
 
 /** A lone player is "Me", matching the solo game the home screen makes. */
 const defaultName = (index: number, count: number) =>
@@ -43,7 +43,7 @@ function NewGamePage() {
   const setName = (index: number, value: string) =>
     setNames((current) => current.map((name, i) => (i === index ? value : name)))
 
-  const nameFor = (index: number) => names[index].trim() || defaultName(index, count)
+  const nameFor = (index: number) => names[index]?.trim() || defaultName(index, count)
 
   /** Open the name fields with the caret already in the one you asked for. */
   const beginEdit = (index: number) => {
@@ -122,7 +122,7 @@ function NewGamePage() {
             min={MIN_PLAYERS}
             max={MAX_PLAYERS}
             step={1}
-            onValueChange={([next]) => setCount(next)}
+            onValueChange={([next]) => setCount(next ?? MIN_PLAYERS)}
           />
 
           <div className="flex flex-wrap items-center justify-center gap-2 pt-1">

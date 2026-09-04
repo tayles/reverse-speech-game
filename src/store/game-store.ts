@@ -143,8 +143,8 @@ export const useGameStore = create<GameState>()(
           players: players.map((p, i) => ({
             ...p,
             id: uid('p'),
-            emoji: p.emoji || AVATARS[i % AVATARS.length],
-            colour: p.colour || COLOURS[i % COLOURS.length],
+            emoji: p.emoji || AVATARS[i % AVATARS.length] || AVATARS[0],
+            colour: p.colour || COLOURS[i % COLOURS.length] || COLOURS[0],
           })),
           rounds: [],
           status: 'active',
@@ -211,8 +211,8 @@ export const useGameStore = create<GameState>()(
           const next: Player = {
             ...player,
             id: uid('p'),
-            emoji: player.emoji || AVATARS[index % AVATARS.length],
-            colour: player.colour || COLOURS[index % COLOURS.length],
+            emoji: player.emoji || AVATARS[index % AVATARS.length] || AVATARS[0],
+            colour: player.colour || COLOURS[index % COLOURS.length] || COLOURS[0],
           }
           return {
             games: {
@@ -465,11 +465,14 @@ export function roundTurn(game: Game, round: Round, masterAlsoAttempts: boolean)
 
 /** The player who should host the next round — rotates through everyone. */
 export function nextMaster(game: Game): Player {
-  if (game.players.length === 0) throw new Error('Game has no players')
+  // Destructuring proves the list is non-empty in a way an early length check
+  // does not, so the rotation below needs no assertion.
+  const [first] = game.players
+  if (!first) throw new Error('Game has no players')
   const lastMaster = game.rounds.at(-1)?.masterId
-  if (!lastMaster) return game.players[0]
+  if (!lastMaster) return first
   const index = game.players.findIndex((p) => p.id === lastMaster)
-  return game.players[(index + 1) % game.players.length]
+  return game.players[(index + 1) % game.players.length] ?? first
 }
 
 /** Every attempt a player made at a round, newest last. */

@@ -47,9 +47,9 @@ export function isSpeechRecognitionSupported(): boolean {
 }
 
 export interface SpeechSessionOptions {
-  lang?: string
+  lang?: string | undefined
   /** Fired as the player speaks, so we can show live captions. */
-  onPartial?: (text: string) => void
+  onPartial?: ((text: string) => void) | undefined
 }
 
 export interface SpeechSession {
@@ -86,6 +86,7 @@ export function startSpeechSession(options: SpeechSessionOptions = {}): SpeechSe
     let interim = ''
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i]
+      if (!result) continue
       const text = result[0]?.transcript ?? ''
       if (result.isFinal) finalText += `${text} `
       else interim += text

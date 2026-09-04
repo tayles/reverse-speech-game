@@ -12,8 +12,9 @@ export function Scoreboard({ game, compact = false }: { game: Game; compact?: bo
   const rows = leaderboard(game)
   const top = Math.max(1, rows[0]?.points ?? 1)
 
-  if (game.players.length === 1) {
-    const row = rows[0]
+  const solitary = game.players.length === 1 ? rows[0] : undefined
+  if (solitary) {
+    const row = solitary
     return (
       <Card>
         <CardContent className="flex items-center justify-between gap-4 p-5">

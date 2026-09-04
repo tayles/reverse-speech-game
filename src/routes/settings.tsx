@@ -51,8 +51,8 @@ function SettingRow({
   description: string
   checked: boolean
   onChange: (v: boolean) => void
-  disabled?: boolean
-  note?: string
+  disabled?: boolean | undefined
+  note?: string | undefined
 }) {
   const id = title.replaceAll(/\s+/g, '-').toLowerCase()
   return (

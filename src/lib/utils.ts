@@ -31,17 +31,17 @@ export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n))
 }
 
-export function shuffle<T>(items: readonly T[]): T[] {
-  const out = [...items]
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[out[i], out[j]] = [out[j], out[i]]
-  }
-  return out
+/**
+ * Requires a non-empty tuple, so the result is a `T` rather than a `T` we have
+ * merely assumed is there.
+ */
+export function pickRandom<T>(items: readonly [T, ...T[]]): T {
+  return items[Math.floor(Math.random() * items.length)] as T
 }
 
-export function pickRandom<T>(items: readonly T[]): T {
-  return items[Math.floor(Math.random() * items.length)]
+/** Narrowing filter — `filter(Boolean)` does not narrow in TypeScript. */
+export function isDefined<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined
 }
 
 /** "Ada" -> "Ada's", "Chris" -> "Chris'". */
