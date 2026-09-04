@@ -54,9 +54,13 @@ too.
 ## Images
 
 Everything in `public/` and `src/assets/` is committed already compressed, via
-`bun run optimise-images`. It is lossy, so run it on a newly added image, not
-repeatedly over one that is already in the repo — recompressing a compressed
-image costs quality and saves nothing.
+`bun run optimise-images`. That fetches optimizt through `bunx` rather than
+installing it, since it is only ever run by hand — so the first run needs a
+network connection, and CI never pays for a tool it doesn't use.
+
+It is lossy, so run it on a newly added image, not repeatedly over one that is
+already in the repo — recompressing a compressed image costs quality and saves
+nothing.
 
 Icons have constraints worth not undoing: the maskable one must fill its square
 opaquely, since the OS crops it to a circle or squircle, while the others keep
