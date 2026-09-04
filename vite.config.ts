@@ -16,6 +16,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // Store-listing screenshots are only ever read by the install prompt,
+        // which is online by definition. No sense spending offline cache on them.
+        globIgnores: ['**/screenshots/**'],
         navigateFallback: 'index.html',
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
@@ -37,6 +40,24 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
+          },
+        ],
+        // Both form factors are needed for the richer install UI: at least one
+        // `wide` for desktop, and at least one non-`wide` for mobile.
+        screenshots: [
+          {
+            src: 'screenshots/home-wide.png',
+            sizes: '1280x800',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Backwards Brain on a laptop, ready to record a phrase',
+          },
+          {
+            src: 'screenshots/home-narrow.png',
+            sizes: '390x844',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Backwards Brain on a phone, ready to record a phrase',
           },
         ],
       },

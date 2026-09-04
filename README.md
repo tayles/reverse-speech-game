@@ -1,4 +1,9 @@
-# 🔁 Backwards Brain
+# Backwards Brain
+
+![Backwards Brain: record a phrase, hear it backwards, copy the sound, then flip
+back and check.](public/screenshots/opengraph.png)
+
+<img src="public/icon-512.png" align="right" width="132" alt="">
 
 A silly speech game for kids. Record a phrase, listen to it played backwards,
 then try to copy the backwards sound. Flip _your_ recording around — if you got
@@ -7,6 +12,12 @@ it right, your gibberish turns back into the original phrase.
 Play solo, or pass the device around with up to eight players. Setting up is one
 slider; avatars and colours are handed out by seat, and names can be typed in if
 "Player 3" won't do.
+
+<br clear="right" />
+
+![The Backwards Brain home screen on a laptop: the mascot above the question “Can
+you talk backwards?”, with buttons to play alone or with
+friends.](public/screenshots/home-wide.png)
 
 ## Quick start
 

@@ -62,6 +62,17 @@ It is lossy, so run it on a newly added image, not repeatedly over one that is
 already in the repo — recompressing a compressed image costs quality and saves
 nothing.
 
+`public/screenshots/` holds the two store-listing shots referenced by the
+manifest. Chrome wants at least one `form_factor: 'wide'` for the desktop
+install prompt and at least one non-`wide` for mobile, so there is one of each;
+they are captured from the home screen with storage cleared, so no stale "game
+in progress" card shows. `opengraph.png` sits alongside them as the share-preview
+image, referenced from the Open Graph and Twitter tags rather than the manifest:
+Chrome wants every `wide` screenshot to share one aspect ratio, and that card is
+1200x670 against the screenshots' 1280x800. All three are excluded from the
+service worker precache — share previews and install prompts are online by
+definition.
+
 Icons have constraints worth not undoing: the maskable one must fill its square
 opaquely, since the OS crops it to a circle or squircle, while the others keep
 transparent corners so they don't show white against a dark home screen.
