@@ -27,6 +27,12 @@ bun run typecheck     # tsc alone
 bun run test          # unit tests
 ```
 
+Artwork is committed already compressed. After adding or replacing an image:
+
+```bash
+bun run optimise-images   # optimizt over public/ and src/assets/
+```
+
 ## How a round works
 
 1. **Record** — one player is the phrase master for the round; they say

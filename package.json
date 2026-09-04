@@ -12,7 +12,8 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "typecheck": "tsc -b --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "optimise-images": "bunx @343dev/optimizt public src/assets"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
