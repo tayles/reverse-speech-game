@@ -1,20 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" aria-label="Backwards Brain" viewBox="0 0 64 64" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 64 64" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g clip-path="url(#a)">
+    <path fill="url(#b)" d="M49 0H15C6.716 0 0 6.716 0 15v34c0 8.284 6.716 15 15 15h34c8.284 0 15-6.716 15-15V15c0-8.284-6.716-15-15-15"/>
+    <path stroke="#fff" stroke-linecap="round" stroke-width="5" d="M7.509 39.208a24.4 24.4 0 0 1-.316-10.65 24.9 24.9 0 0 1 4.252-9.85 25.35 25.35 0 0 1 8.025-7.214 25.4 25.4 0 0 1 10.301-3.23m26.72 16.528c.888 3.474.996 7.108.316 10.65a24.9 24.9 0 0 1-4.252 9.85 25.35 25.35 0 0 1-8.025 7.214 25.4 25.4 0 0 1-10.301 3.23"/>
+    <path fill="#fff" d="m20.739 2.663 15.011.174-6.055 12.542zM43.26 61.337l-15.011-.174 6.054-12.542z"/>
+    <path fill="url(#c)" stroke="#16324f" stroke-width="2.5" d="M35.406 40.57a7.706 7.706 0 1 0-12.624-8.84l-6.63 9.468a7.706 7.706 0 0 0 12.625 8.84z"/>
+    <path fill="#9aa4b2" stroke="#16324f" stroke-width="2.5" d="M31.672 32.468c5.52 3.865 13.128 2.523 16.993-2.996s2.523-13.128-2.996-16.993-13.128-2.523-16.993 2.996-2.523 13.128 2.996 16.993Z"/>
+    <path fill="#e8324a" d="M25.706 40.99a3.34 3.34 0 1 0 3.83-5.471 3.34 3.34 0 0 0-3.83 5.47"/>
+  </g>
   <defs>
-    <linearGradient id="a" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="#5cc6ff"/>
+    <linearGradient id="b" x1="0" x2="0" y1="0" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5cc6ff"/>
       <stop offset="1" stop-color="#0b7fee"/>
     </linearGradient>
-    <linearGradient id="b" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#ffd84d"/>
+    <linearGradient id="c" x1="27.202" x2="38.62" y1="25.418" y2="49.622" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffd84d"/>
       <stop offset="1" stop-color="#ff6e2e"/>
     </linearGradient>
+    <clipPath id="a">
+      <path fill="#fff" d="M0 0h64v64H0z"/>
+    </clipPath>
   </defs>
-  <rect width="64" height="64" fill="url(#a)" rx="15"/>
-  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="5" d="M13 28a19 19 0 0 1 26-13m12 21a19 19 0 0 1-26 13"/>
-  <path fill="#fff" d="m36 8 10 6-9 6zm-8 48-10-6 9-6z"/>
-  <g transform="rotate(35 32 32)">
-    <rect width="12" height="21" x="26" y="30" fill="url(#b)" stroke="#16324f" stroke-width="2.5" rx="6"/>
-    <circle cx="32" cy="23" r="9.5" fill="#9aa4b2" stroke="#16324f" stroke-width="2.5"/>
-    <circle cx="32" cy="38" r="2.6" fill="#e8324a"/>
-  </g>
 </svg>

@@ -16,6 +16,8 @@ bun run format:check  # oxfmt — CI fails on this first, so run it before pushi
 bun run lint          # oxlint
 bun run build         # tsc -b, then vite build
 bun run test          # bun test
+
+bun run optimise-images   # optimizt; run after adding or replacing artwork
 ```
 
 CI (`.github/workflows/deploy.yml`) is a single job running exactly those four
@@ -48,6 +50,17 @@ own ring. It lights up and shrinks instead. Other buttons do travel.
 matters here: this is a touch-first app, and an ungated hover leaves buttons
 stuck looking pressed after a tap. Anything revealed on hover needs a tap path
 too.
+
+## Images
+
+Everything in `public/` and `src/assets/` is committed already compressed, via
+`bun run optimise-images`. It is lossy, so run it on a newly added image, not
+repeatedly over one that is already in the repo — recompressing a compressed
+image costs quality and saves nothing.
+
+Icons have constraints worth not undoing: the maskable one must fill its square
+opaquely, since the OS crops it to a circle or squircle, while the others keep
+transparent corners so they don't show white against a dark home screen.
 
 ## Store
 

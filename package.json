@@ -12,7 +12,8 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "typecheck": "tsc -b --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "optimise-images": "optimizt public src/assets"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -34,6 +35,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@343dev/optimizt": "^13.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/bun": "^1.4.0",
     "@types/node": "^26.4.1",
