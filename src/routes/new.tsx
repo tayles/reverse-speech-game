@@ -150,7 +150,9 @@ function NewGamePage() {
                       maxLength={14}
                       placeholder={defaultName(i, count)}
                       onChange={(e) => setName(i, e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && setEditing(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') setEditing(false)
+                      }}
                       aria-label={`Name for player ${i + 1}`}
                       className="h-10 w-32 rounded-xl px-3 text-base"
                     />

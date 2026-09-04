@@ -30,7 +30,7 @@ function pickMimeType(): string | undefined {
 export function isRecordingSupported(): boolean {
   return (
     typeof navigator !== 'undefined' &&
-    !!navigator.mediaDevices?.getUserMedia &&
+    typeof navigator.mediaDevices?.getUserMedia === 'function' &&
     typeof MediaRecorder !== 'undefined'
   )
 }
@@ -106,8 +106,8 @@ export async function startRecording(): Promise<RecorderHandle> {
           teardown()
           reject(new Error('Recording failed'))
         }
-        if (recorder.state !== 'inactive') recorder.stop()
-        else recorder.onstop?.(new Event('stop'))
+        if (recorder.state === 'inactive') recorder.onstop?.(new Event('stop'))
+        else recorder.stop()
       })
     },
     cancel: teardown,

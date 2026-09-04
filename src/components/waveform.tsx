@@ -64,14 +64,15 @@ export function Waveform({
   playRef.current = onPlay
 
   useEffect(() => {
-    if (!containerRef.current || !url) return
+    const container = containerRef.current
+    if (!container || !url) return
     setReady(false)
     setPlaying(false)
     setRate(NORMAL_RATE)
     rateRef.current = NORMAL_RATE
 
     const ws = WaveSurfer.create({
-      container: containerRef.current,
+      container,
       url,
       height,
       waveColor: 'rgba(255,255,255,0.28)',
@@ -102,10 +103,15 @@ export function Waveform({
     // Tapping the wave should start it from there, not just move the cursor.
     ws.on('interaction', () => {
       if (ws.isPlaying()) return
-      void unlockAudio().then(() => {
+      void (async () => {
+        await unlockAudio()
         ws.setPlaybackRate(rateRef.current, true)
-        ws.play().catch(() => {})
-      })
+        try {
+          await ws.play()
+        } catch {
+          /* autoplay blocked — the user can tap again */
+        }
+      })()
     })
     ws.on('finish', () => {
       setPlaying(false)

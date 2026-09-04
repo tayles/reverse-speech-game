@@ -36,7 +36,9 @@ export function clamp(n: number, min: number, max: number): number {
  * merely assumed is there.
  */
 export function pickRandom<T>(items: readonly [T, ...T[]]): T {
-  return items[Math.floor(Math.random() * items.length)] as T
+  // The tuple type guarantees index 0 exists, which is the fallback here; the
+  // random index is in range by construction.
+  return items[Math.floor(Math.random() * items.length)] ?? items[0]
 }
 
 /** Narrowing filter — `filter(Boolean)` does not narrow in TypeScript. */

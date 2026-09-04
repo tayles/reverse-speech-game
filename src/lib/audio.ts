@@ -7,9 +7,7 @@ let ctx: AudioContext | null = null
 
 export function getAudioContext(): AudioContext {
   if (!ctx || ctx.state === 'closed') {
-    const Ctor =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const Ctor = window.AudioContext ?? window.webkitAudioContext
     ctx = new Ctor()
   }
   return ctx
@@ -29,7 +27,7 @@ export async function unlockAudio(): Promise<void> {
 
 export async function decodeBlob(blob: Blob): Promise<AudioBuffer> {
   const buf = await blob.arrayBuffer()
-  return await getAudioContext().decodeAudioData(buf)
+  return getAudioContext().decodeAudioData(buf)
 }
 
 function copyBuffer(source: AudioBuffer, length: number): AudioBuffer {
@@ -143,7 +141,7 @@ export function findContentBounds(
   // Adaptive threshold: sit above this recording's own noise floor, but also
   // demand a sensible fraction of its loudest frame so hiss never counts.
   const sorted = rms.toSorted()
-  const loudest = sorted[sorted.length - 1]!
+  const loudest = sorted.at(-1)!
   if (loudest < 1e-4) return null
   // Cap the floor estimate: in a clip that is almost entirely speech the tenth
   // percentile is itself speech, and an uncapped floor would mask the lot.
@@ -274,7 +272,7 @@ export function encodeWav(buffer: AudioBuffer): Blob {
   const view = new DataView(new ArrayBuffer(44 + dataSize))
 
   const writeStr = (offset: number, s: string) => {
-    for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i))
+    for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.codePointAt(i) ?? 0)
   }
 
   writeStr(0, 'RIFF')
@@ -306,15 +304,15 @@ export function encodeWav(buffer: AudioBuffer): Blob {
 }
 
 /** Resample to a lower rate to keep stored clips small (kids' voices, 22.05kHz is plenty). */
-export async function resample(input: AudioBuffer, sampleRate = 22050): Promise<AudioBuffer> {
-  if (input.sampleRate <= sampleRate) return input
+export function resample(input: AudioBuffer, sampleRate = 22050): Promise<AudioBuffer> {
+  if (input.sampleRate <= sampleRate) return Promise.resolve(input)
   const frames = Math.ceil((input.length * sampleRate) / input.sampleRate)
   const offline = new OfflineAudioContext(input.numberOfChannels, frames, sampleRate)
   const src = offline.createBufferSource()
   src.buffer = input
   src.connect(offline.destination)
   src.start()
-  return await offline.startRendering()
+  return offline.startRendering()
 }
 
 export interface ProcessedClip {

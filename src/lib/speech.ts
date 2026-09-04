@@ -7,39 +7,8 @@
  * transcript as a nice-to-have, never a requirement.
  */
 
-interface SpeechRecognitionAlternativeLike {
-  transcript: string
-  confidence: number
-}
-interface SpeechRecognitionResultLike {
-  isFinal: boolean
-  length: number
-  [index: number]: SpeechRecognitionAlternativeLike
-}
-interface SpeechRecognitionEventLike extends Event {
-  resultIndex: number
-  results: { length: number; [index: number]: SpeechRecognitionResultLike }
-}
-interface SpeechRecognitionLike extends EventTarget {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  maxAlternatives: number
-  start: () => void
-  stop: () => void
-  abort: () => void
-  onresult: ((e: SpeechRecognitionEventLike) => void) | null
-  onerror: ((e: Event & { error?: string }) => void) | null
-  onend: (() => void) | null
-}
-type SpeechRecognitionCtor = new () => SpeechRecognitionLike
-
 function getCtor(): SpeechRecognitionCtor | undefined {
-  const w = window as unknown as {
-    SpeechRecognition?: SpeechRecognitionCtor
-    webkitSpeechRecognition?: SpeechRecognitionCtor
-  }
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition
+  return window.SpeechRecognition ?? window.webkitSpeechRecognition
 }
 
 export function isSpeechRecognitionSupported(): boolean {
@@ -62,14 +31,14 @@ export interface SpeechSession {
 export function startSpeechSession(options: SpeechSessionOptions = {}): SpeechSession {
   const Ctor = getCtor()
   if (!Ctor) {
-    return { finish: async () => '', abort: () => {} }
+    return { finish: () => Promise.resolve(''), abort: () => {} }
   }
 
   let recognition: SpeechRecognitionLike
   try {
     recognition = new Ctor()
   } catch {
-    return { finish: async () => '', abort: () => {} }
+    return { finish: () => Promise.resolve(''), abort: () => {} }
   }
 
   recognition.lang = options.lang || navigator.language || 'en-US'
@@ -125,7 +94,12 @@ export function startSpeechSession(options: SpeechSessionOptions = {}): SpeechSe
         return settle()
       }
       // Recognition engines can take a beat to emit their final result.
-      await Promise.race([done, new Promise<void>((r) => setTimeout(r, 1800))])
+      await Promise.race([
+        done,
+        new Promise<void>((r) => {
+          setTimeout(r, 1800)
+        }),
+      ])
       return settle()
     },
     abort() {

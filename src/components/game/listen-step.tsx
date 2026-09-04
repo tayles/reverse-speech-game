@@ -86,7 +86,9 @@ export function ListenStep({
                 maxLength={80}
                 placeholder="What was said?"
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && savePhrase()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') savePhrase()
+                }}
                 aria-label="The phrase that was said"
               />
               <Button variant="go" size="icon" onClick={savePhrase} aria-label="Save phrase">

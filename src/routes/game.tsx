@@ -63,7 +63,7 @@ function GamePage() {
   const [confirmExit, setConfirmExit] = useState(false)
 
   const round: Round | undefined = useMemo(() => {
-    if (!game || phase.kind === 'record-phrase') return undefined
+    if (!game || phase.kind === 'record-phrase') return
     return game.rounds.find((r) => r.id === phase.roundId)
   }, [game, phase])
 
@@ -73,7 +73,7 @@ function GamePage() {
       : (game?.rounds.length ?? 0) + 1
 
   const master = useMemo(() => {
-    if (!game) return undefined
+    if (!game) return
     if (round) return game.players.find((p) => p.id === round.masterId)
     return nextMaster(game)
   }, [game, round])
@@ -84,7 +84,7 @@ function GamePage() {
   )
 
   const recordingPlayer = useMemo(() => {
-    if (!game || phase.kind !== 'listen') return undefined
+    if (!game || phase.kind !== 'listen') return
     if (phase.retryFor) return game.players.find((p) => p.id === phase.retryFor)
     return turn?.current
   }, [game, phase, turn])

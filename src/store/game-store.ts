@@ -369,7 +369,7 @@ export const useGameStore = create<GameState>()(
         set((s) => ({ settings: { ...s.settings, ...patch } }))
       },
 
-      async cleanupOrphanAudio() {
+      cleanupOrphanAudio() {
         const keep = new Set<string>()
         for (const game of Object.values(get().games)) {
           for (const round of game.rounds) {
@@ -377,7 +377,7 @@ export const useGameStore = create<GameState>()(
             for (const attempt of round.attempts) keep.add(attempt.audioId)
           }
         }
-        return await pruneAudio(keep)
+        return pruneAudio(keep)
       },
     }),
     {
@@ -482,8 +482,9 @@ export function attemptsBy(round: Round, playerId: string): Attempt[] {
 
 /** The attempt that actually counts for a player in a round — their best. */
 export function bestAttempt(round: Round, playerId: string): Attempt | undefined {
-  return attemptsBy(round, playerId).reduce<Attempt | undefined>(
-    (best, a) => (!best || a.points > best.points ? a : best),
-    undefined,
-  )
+  let best: Attempt | undefined
+  for (const attempt of attemptsBy(round, playerId)) {
+    if (!best || attempt.points > best.points) best = attempt
+  }
+  return best
 }

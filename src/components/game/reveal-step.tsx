@@ -63,24 +63,26 @@ export function RevealStep({
     let live = true
 
     // Yield first, so the reveal audio starts playing before we block on maths.
-    const timer = setTimeout(async () => {
-      try {
-        const [phrase, flipped] = await Promise.all([
-          decodeBlob(original.clip!.wav),
-          decodeBlob(mine.clip!.reversedWav),
-        ])
-        if (!live) return
-        const result = compareSignals(
-          phrase.getChannelData(0),
-          flipped.getChannelData(0),
-          phrase.sampleRate,
-        )
-        if (!live) return
-        if (result.usable) scoreRef.current({ similarity: result.score })
-        else setUnusable(true)
-      } catch {
-        if (live) setUnusable(true)
-      }
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const [phrase, flipped] = await Promise.all([
+            decodeBlob(original.clip!.wav),
+            decodeBlob(mine.clip!.reversedWav),
+          ])
+          if (!live) return
+          const result = compareSignals(
+            phrase.getChannelData(0),
+            flipped.getChannelData(0),
+            phrase.sampleRate,
+          )
+          if (!live) return
+          if (result.usable) scoreRef.current({ similarity: result.score })
+          else setUnusable(true)
+        } catch {
+          if (live) setUnusable(true)
+        }
+      })()
     }, 400)
 
     return () => {

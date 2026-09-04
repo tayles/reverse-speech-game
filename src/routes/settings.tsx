@@ -33,17 +33,13 @@ import { useGameStore } from '@/store/game-store'
 
 import { Route as rootRoute } from './__root'
 
-interface InstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-}
-
 function SettingRow({
   icon: Icon,
   title,
   description,
   checked,
   onChange,
-  disabled,
+  disabled = false,
   note,
 }: {
   icon: typeof Mic
@@ -54,7 +50,7 @@ function SettingRow({
   disabled?: boolean | undefined
   note?: string | undefined
 }) {
-  const id = title.replaceAll(/\s+/g, '-').toLowerCase()
+  const id = title.replaceAll(/\s+/gu, '-').toLowerCase()
   return (
     <div className={cn('flex items-start gap-4 py-4', disabled && 'opacity-50')}>
       <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10">
@@ -79,7 +75,7 @@ function SettingsPage() {
   const deleteGame = useGameStore((s) => s.deleteGame)
 
   const [usage, setUsage] = useState<{ usedMb: number; quotaMb: number } | null>(null)
-  const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null)
+  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
   const [confirmWipe, setConfirmWipe] = useState(false)
 
   const speechOk = isSpeechRecognitionSupported()
@@ -90,9 +86,9 @@ function SettingsPage() {
   }, [])
 
   useEffect(() => {
-    const handler = (e: Event) => {
+    const handler = (e: BeforeInstallPromptEvent) => {
       e.preventDefault()
-      setInstallEvent(e as InstallPromptEvent)
+      setInstallEvent(e)
     }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)

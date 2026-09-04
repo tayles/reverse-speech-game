@@ -31,11 +31,24 @@ land as annotations on the diff; `test:ci` adds lcov coverage. Run `fix` and
 `build` locally before opening a PR; they are quick.
 
 Linting is type-aware (`--type-aware --type-check`), which needs the
-`oxlint-tsgolint` binary — that is why it is a devDependency. It currently
-reports six warnings, all in code that is right as it stands: three effects that
-return a cleanup on some paths and nothing on others, and three casts reaching
-for vendor-prefixed browser APIs the DOM lib doesn't declare. They are warnings,
-so they don't fail a build.
+`oxlint-tsgolint` binary — that is why it is a devDependency. It reports nothing
+at present, and TypeScript runs with every strict flag on, not just `strict`.
+Keep it that way: a warning left in place becomes a warning everyone scrolls
+past.
+
+Where a rule is switched off in `.oxlintrc.json` there is a comment saying why —
+mostly arbitrary size limits, and a couple of rules that contradict each other
+or fight React's own contracts. Prefer fixing a finding to adding to that list.
+
+Two things the strict flags make awkward, both deliberate:
+
+- **Indexing in the DSP kernels needs `!`.** Every `data[i]` in a loop bounded by
+  `data.length` reads as `number | undefined`. Those get non-null assertions
+  rather than `?? 0`, which would put a branch in the hottest loops in the app
+  to handle something that cannot happen.
+- **`||` is often right where `??` looks righter.** An empty name, emoji or
+  phrase has to fall through to its default, and only `||` does that, so
+  `prefer-nullish-coalescing` is configured to leave strings alone.
 
 ## Constraints that look like bugs but aren't
 

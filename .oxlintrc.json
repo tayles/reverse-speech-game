@@ -1,14 +1,15 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "unicorn", "oxc", "jsx-a11y"],
+  "plugins": ["react", "typescript", "unicorn", "oxc", "jsx-a11y", "promise", "import"],
   "env": {
     "browser": true,
     "es2024": true
   },
   "categories": {
     "correctness": "error",
-    "suspicious": "warn",
-    "perf": "warn"
+    "suspicious": "error",
+    "perf": "error",
+    "pedantic": "warn"
   },
   "rules": {
     "no-console": "off",
@@ -20,7 +21,31 @@
     "react/react-in-jsx-scope": "off",
     "react/jsx-key": "error",
     "react/no-array-index-key": "off",
-    "oxc/no-map-spread": "off"
+    "oxc/no-map-spread": "off",
+    "typescript/prefer-readonly-parameter-types": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-lines": "off",
+    "eslint/max-statements": "off",
+    "import/max-dependencies": "off",
+    "eslint/no-inline-comments": "off",
+    "typescript/no-confusing-void-expression": "off",
+    "import/no-unassigned-import": "off",
+    "typescript/strict-boolean-expressions": [
+      "warn",
+      {
+        "allowNullableString": true
+      }
+    ],
+    "typescript/consistent-return": "off",
+    "typescript/prefer-nullish-coalescing": [
+      "warn",
+      {
+        "ignorePrimitives": {
+          "string": true
+        }
+      }
+    ],
+    "unicorn/no-array-callback-reference": "off"
   },
   "ignorePatterns": ["dist", "dev-dist", "node_modules", "src/components/ui"]
 }
