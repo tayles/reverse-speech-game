@@ -99,9 +99,20 @@ Chrome wants every `wide` screenshot to share one aspect ratio, and that card is
 service worker precache — share previews and install prompts are online by
 definition.
 
-Icons have constraints worth not undoing: the maskable one must fill its square
-opaquely, since the OS crops it to a circle or squircle, while the others keep
-transparent corners so they don't show white against a dark home screen.
+Each icon has a constraint worth not undoing, and they pull in different
+directions — which is why there are three files rather than one resized:
+
+- `icon-192.png` and `icon-512.png` keep **transparent corners**, so the rounded
+  tile doesn't sit on a white square against a dark home screen. Android and the
+  desktop install prompt honour the alpha.
+- `icon-512-maskable.png` is **fully opaque and fills its square**, with the
+  artwork inside the middle 80%. The OS crops it to a circle or squircle, so
+  transparency there is a liability and anything near an edge is lost.
+- `apple-touch-icon.png` is **fully opaque and edge to edge, with no rounding of
+  its own**. iOS ignores alpha entirely: it composites the image onto a solid
+  background and then applies its own mask, so transparent corners come back as
+  a white halo outside the tile's rounded edge. Rounding it ourselves would
+  double up with the mask. Never run the transparency step over this one.
 
 ## Store
 
