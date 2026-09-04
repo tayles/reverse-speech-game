@@ -20,9 +20,9 @@ bun run test          # bun test
 bun run optimise-images   # optimizt; run after adding or replacing artwork
 ```
 
-CI (`.github/workflows/deploy.yml`) is a single job running exactly those four
-checks in that order, then publishing to Pages. Run them locally before opening
-a PR; they are quick.
+CI runs exactly those four checks, in that order, as a single job:
+`pr.yml` on pull requests, and `deploy.yml` on pushes to `main` before it
+publishes to Pages. Run them locally before opening a PR; they are quick.
 
 ## Constraints that look like bugs but aren't
 

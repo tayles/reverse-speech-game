@@ -147,11 +147,18 @@ src/
 public/       favicon and the installable app icons
 ```
 
-## Deploying
+## CI and deploying
 
-`.github/workflows/deploy.yml` is one job: it checks formatting, lints, builds,
-tests and then publishes `dist/` to GitHub Pages, each step gating the next. It
-runs on pushes to `main` and on demand.
+Two workflows, a job each, running the same four checks — formatting, lint,
+build (which type-checks) and tests — with each step gating the next:
+
+- `pr.yml` runs them on every pull request, and stops there.
+- `deploy.yml` runs them on pushes to `main`, then publishes `dist/` to GitHub
+  Pages.
+
+The steps are spelled out in both rather than shared through a reusable
+workflow, which would have split the deploy into two jobs to save a dozen
+duplicated lines.
 
 Nothing about the build is Pages-specific. Vite emits relative asset URLs
 (`base: './'`) and the router uses hash history, so the app works from any
