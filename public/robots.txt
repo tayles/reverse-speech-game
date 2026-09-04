@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tayles.github.io/reverse-speech-game/sitemap.xml
