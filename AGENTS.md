@@ -12,17 +12,30 @@ the things you would otherwise have to rediscover.
 ```bash
 bun install
 bun run dev           # vite dev server
-bun run format:check  # oxfmt — CI fails on this first, so run it before pushing
-bun run lint          # oxlint
+bun run fix           # format and fix lint findings — run this, not the parts
 bun run build         # tsc -b, then vite build
 bun run test          # bun test
 
 bun run optimise-images   # optimizt; run after adding or replacing artwork
 ```
 
-CI runs exactly those four checks, in that order, as a single job:
-`pr.yml` on pull requests, and `deploy.yml` on pushes to `main` before it
-publishes to Pages. Run them locally before opening a PR; they are quick.
+**Reach for `fix` rather than its halves.** It is `fmt:fix` then `lint:fix`, so
+it rewrites what it can and leaves only what needs a decision. `check` is the
+read-only version — `fmt` and `lint` alone are the same thing narrower, and
+mostly exist so CI can name them.
+
+CI is a single job running `check:ci`, `build` and `test:ci`: `pr.yml` on pull
+requests, and `deploy.yml` on pushes to `main` before it publishes to Pages.
+`check:ci` differs from `check` only in passing `--format=github`, so findings
+land as annotations on the diff; `test:ci` adds lcov coverage. Run `fix` and
+`build` locally before opening a PR; they are quick.
+
+Linting is type-aware (`--type-aware --type-check`), which needs the
+`oxlint-tsgolint` binary — that is why it is a devDependency. It currently
+reports six warnings, all in code that is right as it stands: three effects that
+return a cleanup on some paths and nothing on others, and three casts reaching
+for vendor-prefixed browser APIs the DOM lib doesn't declare. They are warnings,
+so they don't fail a build.
 
 ## Constraints that look like bugs but aren't
 
