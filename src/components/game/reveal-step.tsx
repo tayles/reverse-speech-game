@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, AudioLines, Loader2, RefreshCw, Trophy } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+
+import { PlayerChip } from '@/components/player-chip'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Waveform } from '@/components/waveform'
-import { PlayerChip } from '@/components/player-chip'
 import { useClip } from '@/components/use-clip'
+import { Waveform } from '@/components/waveform'
 import { compareSignals } from '@/lib/acoustic'
 import { decodeBlob } from '@/lib/audio'
 import { scoreBand } from '@/lib/score-band'
@@ -62,24 +63,26 @@ export function RevealStep({
     let live = true
 
     // Yield first, so the reveal audio starts playing before we block on maths.
-    const timer = setTimeout(async () => {
-      try {
-        const [phrase, flipped] = await Promise.all([
-          decodeBlob(original.clip!.wav),
-          decodeBlob(mine.clip!.reversedWav),
-        ])
-        if (!live) return
-        const result = compareSignals(
-          phrase.getChannelData(0),
-          flipped.getChannelData(0),
-          phrase.sampleRate,
-        )
-        if (!live) return
-        if (result.usable) scoreRef.current({ similarity: result.score })
-        else setUnusable(true)
-      } catch {
-        if (live) setUnusable(true)
-      }
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const [phrase, flipped] = await Promise.all([
+            decodeBlob(original.clip!.wav),
+            decodeBlob(mine.clip!.reversedWav),
+          ])
+          if (!live) return
+          const result = compareSignals(
+            phrase.getChannelData(0),
+            flipped.getChannelData(0),
+            phrase.sampleRate,
+          )
+          if (!live) return
+          if (result.usable) scoreRef.current({ similarity: result.score })
+          else setUnusable(true)
+        } catch {
+          if (live) setUnusable(true)
+        }
+      })()
     }, 400)
 
     return () => {
@@ -134,7 +137,7 @@ export function RevealStep({
 
           {similarity !== undefined && band && (
             <div className="animate-pop space-y-2 text-center">
-              <p className="flex items-center justify-center gap-1.5 text-sm font-extrabold uppercase tracking-widest text-white/35">
+              <p className="flex items-center justify-center gap-1.5 text-sm font-extrabold tracking-widest text-white/35 uppercase">
                 <AudioLines className="size-4" /> Sound match
               </p>
               <p className={cn('text-4xl font-extrabold', band.tone)}>
@@ -146,7 +149,7 @@ export function RevealStep({
                   similarity >= 70 ? 'bg-lime' : similarity >= 40 ? 'bg-sun' : 'bg-tang'
                 }
               />
-              <p className="text-2xl font-extrabold tabular-nums text-white/80">
+              <p className="text-2xl font-extrabold text-white/80 tabular-nums">
                 {similarity}% like the original
               </p>
               {isPersonalBest && (

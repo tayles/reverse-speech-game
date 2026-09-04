@@ -4,5 +4,11 @@
   "semi": false,
   "singleQuote": true,
   "trailingComma": "all",
-  "ignorePatterns": ["dist", "dev-dist"]
+  "ignorePatterns": ["dist", "dev-dist"],
+  "sortImports": true,
+  "sortPackageJson": true,
+  "sortTailwindcss": {
+    "stylesheet": "src/styles.css",
+    "functions": ["cn", "cva"]
+  }
 }

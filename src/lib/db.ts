@@ -73,7 +73,7 @@ export async function deleteAudio(ids: string[]): Promise<void> {
 
 export async function listAudioIds(): Promise<string[]> {
   const database = await db()
-  return await database.getAllKeys('audio')
+  return database.getAllKeys('audio')
 }
 
 /** Remove any audio no longer referenced by the persisted game state. */
@@ -85,7 +85,7 @@ export async function pruneAudio(keepIds: Set<string>): Promise<number> {
 }
 
 export async function estimateUsage(): Promise<{ usedMb: number; quotaMb: number } | null> {
-  if (!navigator.storage?.estimate) return null
+  if (typeof navigator.storage?.estimate !== 'function') return null
   const { usage = 0, quota = 0 } = await navigator.storage.estimate()
   return { usedMb: usage / 1024 / 1024, quotaMb: quota / 1024 / 1024 }
 }
@@ -95,7 +95,7 @@ export async function estimateUsage(): Promise<{ usedMb: number; quotaMb: number
  * IndexedDB after ~7 days of not using the app.
  */
 export async function requestPersistence(): Promise<boolean> {
-  if (!navigator.storage?.persist) return false
+  if (typeof navigator.storage?.persist !== 'function') return false
   try {
     if (await navigator.storage.persisted()) return true
     return await navigator.storage.persist()

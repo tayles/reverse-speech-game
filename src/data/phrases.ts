@@ -3,7 +3,7 @@
  * Tongue twisters and silliness only — awkward mouthfuls are far more fun
  * backwards than plain everyday phrases are.
  */
-export const PHRASE_IDEAS: string[] = [
+export const PHRASE_IDEAS: readonly [string, ...string[]] = [
   // Tricky twisters
   'Red lorry yellow lorry',
   'She sells seashells',

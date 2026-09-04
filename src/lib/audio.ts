@@ -7,9 +7,7 @@ let ctx: AudioContext | null = null
 
 export function getAudioContext(): AudioContext {
   if (!ctx || ctx.state === 'closed') {
-    const Ctor =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const Ctor = window.AudioContext ?? window.webkitAudioContext
     ctx = new Ctor()
   }
   return ctx
@@ -29,7 +27,7 @@ export async function unlockAudio(): Promise<void> {
 
 export async function decodeBlob(blob: Blob): Promise<AudioBuffer> {
   const buf = await blob.arrayBuffer()
-  return await getAudioContext().decodeAudioData(buf)
+  return getAudioContext().decodeAudioData(buf)
 }
 
 function copyBuffer(source: AudioBuffer, length: number): AudioBuffer {
@@ -43,7 +41,7 @@ export function reverseBuffer(input: AudioBuffer): AudioBuffer {
     const src = input.getChannelData(c)
     const dst = out.getChannelData(c)
     const n = src.length
-    for (let i = 0; i < n; i++) dst[i] = src[n - 1 - i]
+    for (let i = 0; i < n; i++) dst[i] = src[n - 1 - i]!
   }
   return out
 }
@@ -80,8 +78,8 @@ function highPass(data: Float32Array, sampleRate: number, cutoff = 100): Float32
   let previousIn = data[0] ?? 0
   let previousOut = 0
   for (let i = 1; i < data.length; i++) {
-    previousOut = alpha * (previousOut + data[i] - previousIn)
-    previousIn = data[i]
+    previousOut = alpha * (previousOut + data[i]! - previousIn)
+    previousIn = data[i]!
     out[i] = previousOut
   }
   return out
@@ -132,8 +130,8 @@ export function findContentBounds(
     let sum = 0
     let crossings = 0
     for (let i = start; i < end; i++) {
-      sum += detect[i] * detect[i]
-      if (i > start && detect[i] < 0 !== detect[i - 1] < 0) crossings++
+      sum += detect[i]! * detect[i]!
+      if (i > start && detect[i]! < 0 !== detect[i - 1]! < 0) crossings++
     }
     const width = Math.max(1, end - start)
     rms[f] = Math.sqrt(sum / width)
@@ -143,25 +141,25 @@ export function findContentBounds(
   // Adaptive threshold: sit above this recording's own noise floor, but also
   // demand a sensible fraction of its loudest frame so hiss never counts.
   const sorted = rms.toSorted()
-  const loudest = sorted[sorted.length - 1]
+  const loudest = sorted.at(-1)!
   if (loudest < 1e-4) return null
   // Cap the floor estimate: in a clip that is almost entirely speech the tenth
   // percentile is itself speech, and an uncapped floor would mask the lot.
-  const floor = Math.min(sorted[Math.floor(sorted.length * 0.1)], loudest * 0.1)
+  const floor = Math.min(sorted[Math.floor(sorted.length * 0.1)]!, loudest * 0.1)
   const threshold = Math.max(floor * 3 + 0.0015, loudest * 0.08)
 
   const maxGapFrames = Math.max(1, Math.round(maxGapSeconds / (hop / sampleRate)))
   const segments: Segment[] = []
   let index = 0
   while (index < frameCount) {
-    if (rms[index] <= threshold) {
+    if (rms[index]! <= threshold) {
       index++
       continue
     }
     let end = index
     let gap = 0
     for (let f = index + 1; f < frameCount; f++) {
-      if (rms[f] > threshold) {
+      if (rms[f]! > threshold) {
         end = f
         gap = 0
       } else if (++gap > maxGapFrames) {
@@ -169,7 +167,7 @@ export function findContentBounds(
       }
     }
     let zcrSum = 0
-    for (let f = index; f <= end; f++) zcrSum += zcr[f]
+    for (let f = index; f <= end; f++) zcrSum += zcr[f]!
     segments.push({
       from: index,
       to: end + 1,
@@ -189,13 +187,13 @@ export function findContentBounds(
 
   let first = 0
   let last = segments.length - 1
-  while (first < last && isNoise(segments[first])) first++
-  while (last > first && isNoise(segments[last])) last--
+  while (first < last && isNoise(segments[first]!)) first++
+  while (last > first && isNoise(segments[last]!)) last--
   if (first > last) return null
 
   const pad = Math.round(sampleRate * padSeconds)
-  const start = Math.max(0, segments[first].from * hop - pad)
-  const end = Math.min(n, (segments[last].to - 1) * hop + frame + pad)
+  const start = Math.max(0, segments[first]!.from * hop - pad)
+  const end = Math.min(n, (segments[last]!.to - 1) * hop + frame + pad)
   return end > start ? { start, end } : null
 }
 
@@ -220,8 +218,8 @@ export function cleanEdges(input: AudioBuffer, options: CleanOptions = {}): Audi
     dst.set(input.getChannelData(c).subarray(start, end))
     for (let i = 0; i < fade; i++) {
       const gain = i / fade
-      dst[i] *= gain
-      dst[length - 1 - i] *= gain
+      dst[i]! *= gain
+      dst[length - 1 - i]! *= gain
     }
   }
   return out
@@ -233,7 +231,7 @@ export function normalise(input: AudioBuffer, target = 0.92): AudioBuffer {
   for (let c = 0; c < input.numberOfChannels; c++) {
     const data = input.getChannelData(c)
     for (let i = 0; i < data.length; i++) {
-      const a = Math.abs(data[i])
+      const a = Math.abs(data[i]!)
       if (a > peak) peak = a
     }
   }
@@ -243,7 +241,7 @@ export function normalise(input: AudioBuffer, target = 0.92): AudioBuffer {
   for (let c = 0; c < input.numberOfChannels; c++) {
     const src = input.getChannelData(c)
     const dst = out.getChannelData(c)
-    for (let i = 0; i < src.length; i++) dst[i] = src[i] * gain
+    for (let i = 0; i < src.length; i++) dst[i] = src[i]! * gain
   }
   return out
 }
@@ -255,7 +253,7 @@ export function toMono(input: AudioBuffer): AudioBuffer {
   const dst = out.getChannelData(0)
   for (let c = 0; c < input.numberOfChannels; c++) {
     const src = input.getChannelData(c)
-    for (let i = 0; i < src.length; i++) dst[i] += src[i] / input.numberOfChannels
+    for (let i = 0; i < src.length; i++) dst[i]! += src[i]! / input.numberOfChannels
   }
   return out
 }
@@ -274,7 +272,7 @@ export function encodeWav(buffer: AudioBuffer): Blob {
   const view = new DataView(new ArrayBuffer(44 + dataSize))
 
   const writeStr = (offset: number, s: string) => {
-    for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i))
+    for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.codePointAt(i) ?? 0)
   }
 
   writeStr(0, 'RIFF')
@@ -297,7 +295,7 @@ export function encodeWav(buffer: AudioBuffer): Blob {
   let offset = 44
   for (let i = 0; i < frames; i++) {
     for (let c = 0; c < channels; c++) {
-      const s = Math.max(-1, Math.min(1, data[c][i]))
+      const s = Math.max(-1, Math.min(1, data[c]![i]!))
       view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true)
       offset += 2
     }
@@ -306,15 +304,15 @@ export function encodeWav(buffer: AudioBuffer): Blob {
 }
 
 /** Resample to a lower rate to keep stored clips small (kids' voices, 22.05kHz is plenty). */
-export async function resample(input: AudioBuffer, sampleRate = 22050): Promise<AudioBuffer> {
-  if (input.sampleRate <= sampleRate) return input
+export function resample(input: AudioBuffer, sampleRate = 22050): Promise<AudioBuffer> {
+  if (input.sampleRate <= sampleRate) return Promise.resolve(input)
   const frames = Math.ceil((input.length * sampleRate) / input.sampleRate)
   const offline = new OfflineAudioContext(input.numberOfChannels, frames, sampleRate)
   const src = offline.createBufferSource()
   src.buffer = input
   src.connect(offline.destination)
   src.start()
-  return await offline.startRendering()
+  return offline.startRendering()
 }
 
 export interface ProcessedClip {
@@ -367,7 +365,7 @@ export function extractPeaks(buffer: AudioBuffer, buckets = 220): number[] {
     let sum = 0
     const start = b * size
     const end = Math.min(data.length, start + size)
-    for (let i = start; i < end; i++) sum += data[i] * data[i]
+    for (let i = start; i < end; i++) sum += data[i]! * data[i]!
     const rms = Math.sqrt(sum / Math.max(1, end - start))
     if (rms > max) max = rms
     out.push(rms)

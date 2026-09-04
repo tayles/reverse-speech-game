@@ -27,7 +27,7 @@ export function PeakStrip({
   const buckets: number[] = []
   for (let i = 0; i < source.length && buckets.length < bars; i += step) {
     let max = 0
-    for (let k = i; k < Math.min(source.length, i + step); k++) max = Math.max(max, source[k])
+    for (let k = i; k < Math.min(source.length, i + step); k++) max = Math.max(max, source[k] ?? 0)
     buckets.push(max)
   }
   if (buckets.length === 0) buckets.push(0)

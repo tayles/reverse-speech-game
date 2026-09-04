@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { uid } from '@/lib/utils'
+
 import { AVATARS, COLOURS } from '@/data/players'
 import { deleteAudio, pruneAudio } from '@/lib/db'
+import { uid } from '@/lib/utils'
 
 export type GameMode = 'solo' | 'party'
 
@@ -142,8 +143,8 @@ export const useGameStore = create<GameState>()(
           players: players.map((p, i) => ({
             ...p,
             id: uid('p'),
-            emoji: p.emoji || AVATARS[i % AVATARS.length],
-            colour: p.colour || COLOURS[i % COLOURS.length],
+            emoji: p.emoji || AVATARS[i % AVATARS.length] || AVATARS[0],
+            colour: p.colour || COLOURS[i % COLOURS.length] || COLOURS[0],
           })),
           rounds: [],
           status: 'active',
@@ -210,8 +211,8 @@ export const useGameStore = create<GameState>()(
           const next: Player = {
             ...player,
             id: uid('p'),
-            emoji: player.emoji || AVATARS[index % AVATARS.length],
-            colour: player.colour || COLOURS[index % COLOURS.length],
+            emoji: player.emoji || AVATARS[index % AVATARS.length] || AVATARS[0],
+            colour: player.colour || COLOURS[index % COLOURS.length] || COLOURS[0],
           }
           return {
             games: {
@@ -368,7 +369,7 @@ export const useGameStore = create<GameState>()(
         set((s) => ({ settings: { ...s.settings, ...patch } }))
       },
 
-      async cleanupOrphanAudio() {
+      cleanupOrphanAudio() {
         const keep = new Set<string>()
         for (const game of Object.values(get().games)) {
           for (const round of game.rounds) {
@@ -376,7 +377,7 @@ export const useGameStore = create<GameState>()(
             for (const attempt of round.attempts) keep.add(attempt.audioId)
           }
         }
-        return await pruneAudio(keep)
+        return pruneAudio(keep)
       },
     }),
     {
@@ -464,11 +465,14 @@ export function roundTurn(game: Game, round: Round, masterAlsoAttempts: boolean)
 
 /** The player who should host the next round — rotates through everyone. */
 export function nextMaster(game: Game): Player {
-  if (game.players.length === 0) throw new Error('Game has no players')
+  // Destructuring proves the list is non-empty in a way an early length check
+  // does not, so the rotation below needs no assertion.
+  const [first] = game.players
+  if (!first) throw new Error('Game has no players')
   const lastMaster = game.rounds.at(-1)?.masterId
-  if (!lastMaster) return game.players[0]
+  if (!lastMaster) return first
   const index = game.players.findIndex((p) => p.id === lastMaster)
-  return game.players[(index + 1) % game.players.length]
+  return game.players[(index + 1) % game.players.length] ?? first
 }
 
 /** Every attempt a player made at a round, newest last. */
@@ -478,8 +482,9 @@ export function attemptsBy(round: Round, playerId: string): Attempt[] {
 
 /** The attempt that actually counts for a player in a round — their best. */
 export function bestAttempt(round: Round, playerId: string): Attempt | undefined {
-  return attemptsBy(round, playerId).reduce<Attempt | undefined>(
-    (best, a) => (!best || a.points > best.points ? a : best),
-    undefined,
-  )
+  let best: Attempt | undefined
+  for (const attempt of attemptsBy(round, playerId)) {
+    if (!best || attempt.points > best.points) best = attempt
+  }
+  return best
 }

@@ -1,8 +1,9 @@
+import { Play, Pause, Loader2, Snail } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import WaveSurfer from 'wavesurfer.js'
-import { Play, Pause, Loader2, Snail } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 import { unlockAudio } from '@/lib/audio'
+import { cn } from '@/lib/utils'
 import { formatDuration } from '@/lib/utils'
 
 /**
@@ -63,14 +64,15 @@ export function Waveform({
   playRef.current = onPlay
 
   useEffect(() => {
-    if (!containerRef.current || !url) return
+    const container = containerRef.current
+    if (!container || !url) return
     setReady(false)
     setPlaying(false)
     setRate(NORMAL_RATE)
     rateRef.current = NORMAL_RATE
 
     const ws = WaveSurfer.create({
-      container: containerRef.current,
+      container,
       url,
       height,
       waveColor: 'rgba(255,255,255,0.28)',
@@ -101,10 +103,15 @@ export function Waveform({
     // Tapping the wave should start it from there, not just move the cursor.
     ws.on('interaction', () => {
       if (ws.isPlaying()) return
-      void unlockAudio().then(() => {
+      void (async () => {
+        await unlockAudio()
         ws.setPlaybackRate(rateRef.current, true)
-        ws.play().catch(() => {})
-      })
+        try {
+          await ws.play()
+        } catch {
+          /* autoplay blocked — the user can tap again */
+        }
+      })()
     })
     ws.on('finish', () => {
       setPlaying(false)
@@ -206,7 +213,7 @@ export function Waveform({
             {label && (
               <span className="truncate text-base font-extrabold text-white/85">{label}</span>
             )}
-            <span className="shrink-0 text-sm font-bold tabular-nums text-white/45">
+            <span className="shrink-0 text-sm font-bold text-white/45 tabular-nums">
               {sublabel ?? (duration ? formatDuration(duration) : '')}
             </span>
           </div>

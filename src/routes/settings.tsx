@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { createRoute } from '@tanstack/react-router'
 import {
   HardDrive,
@@ -10,12 +9,11 @@ import {
   Download,
   WifiOff,
 } from 'lucide-react'
-import { Route as rootRoute } from './__root'
+import { useEffect, useState } from 'react'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -25,15 +23,15 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog'
-import { useGameStore } from '@/store/game-store'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { estimateUsage } from '@/lib/db'
-import { isSpeechRecognitionSupported } from '@/lib/speech'
 import { isRecordingSupported } from '@/lib/recorder'
+import { isSpeechRecognitionSupported } from '@/lib/speech'
 import { cn } from '@/lib/utils'
+import { useGameStore } from '@/store/game-store'
 
-interface InstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-}
+import { Route as rootRoute } from './__root'
 
 function SettingRow({
   icon: Icon,
@@ -41,7 +39,7 @@ function SettingRow({
   description,
   checked,
   onChange,
-  disabled,
+  disabled = false,
   note,
 }: {
   icon: typeof Mic
@@ -49,10 +47,10 @@ function SettingRow({
   description: string
   checked: boolean
   onChange: (v: boolean) => void
-  disabled?: boolean
-  note?: string
+  disabled?: boolean | undefined
+  note?: string | undefined
 }) {
-  const id = title.replaceAll(/\s+/g, '-').toLowerCase()
+  const id = title.replaceAll(/\s+/gu, '-').toLowerCase()
   return (
     <div className={cn('flex items-start gap-4 py-4', disabled && 'opacity-50')}>
       <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10">
@@ -77,7 +75,7 @@ function SettingsPage() {
   const deleteGame = useGameStore((s) => s.deleteGame)
 
   const [usage, setUsage] = useState<{ usedMb: number; quotaMb: number } | null>(null)
-  const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null)
+  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
   const [confirmWipe, setConfirmWipe] = useState(false)
 
   const speechOk = isSpeechRecognitionSupported()
@@ -88,9 +86,9 @@ function SettingsPage() {
   }, [])
 
   useEffect(() => {
-    const handler = (e: Event) => {
+    const handler = (e: BeforeInstallPromptEvent) => {
       e.preventDefault()
-      setInstallEvent(e as InstallPromptEvent)
+      setInstallEvent(e)
     }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)

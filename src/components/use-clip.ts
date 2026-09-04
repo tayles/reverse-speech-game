@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import { blobUrl, cachedAudio, getAudio, type StoredAudio } from '@/lib/db'
 
 export interface LoadedClip {
@@ -19,15 +20,18 @@ export function useClip(audioId: string | undefined): LoadedClip {
   const [resolved, setResolved] = useState<Resolution | null>(null)
 
   useEffect(() => {
-    if (!audioId || cachedAudio(audioId)) return
     let live = true
-    getAudio(audioId)
-      .then((found) => {
+    if (audioId && !cachedAudio(audioId)) {
+      void (async () => {
+        let found: StoredAudio | undefined
+        try {
+          found = await getAudio(audioId)
+        } catch {
+          found = undefined
+        }
         if (live) setResolved({ id: audioId, clip: found ?? null })
-      })
-      .catch(() => {
-        if (live) setResolved({ id: audioId, clip: null })
-      })
+      })()
+    }
     return () => {
       live = false
     }

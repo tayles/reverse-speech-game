@@ -1,13 +1,14 @@
-import { useState } from 'react'
 import { Pencil, Check, RotateCcw } from 'lucide-react'
+import { useState } from 'react'
+
+import { PlayerChip } from '@/components/player-chip'
+import { RecordButton, type RecordingResult } from '@/components/record-button'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Waveform } from '@/components/waveform'
-import { PlayerChip } from '@/components/player-chip'
-import { RecordButton, type RecordingResult } from '@/components/record-button'
 import { useClip } from '@/components/use-clip'
+import { Waveform } from '@/components/waveform'
 import type { Player, Round, Settings } from '@/store/game-store'
 
 interface Props {
@@ -61,7 +62,7 @@ export function ListenStep({
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <p className="text-sm font-extrabold uppercase tracking-widest text-white/40">
+        <p className="text-sm font-extrabold tracking-widest text-white/40 uppercase">
           Round {roundNumber}
           {attemptsTotal > 1 &&
             ` · go ${Math.min(attemptsDone + 1, attemptsTotal)} of ${attemptsTotal}`}
@@ -85,7 +86,9 @@ export function ListenStep({
                 maxLength={80}
                 placeholder="What was said?"
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && savePhrase()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') savePhrase()
+                }}
                 aria-label="The phrase that was said"
               />
               <Button variant="go" size="icon" onClick={savePhrase} aria-label="Save phrase">
@@ -99,7 +102,7 @@ export function ListenStep({
                 setDraft(round.phrase)
                 setEditing(true)
               }}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white/6 px-4 py-3 text-center transition hover:bg-white/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white/6 px-4 py-3 text-center transition hover:bg-white/12 focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:outline-none"
             >
               <span className="text-2xl font-extrabold text-sun sm:text-3xl">
                 “{round.phrase || 'tap to add the phrase'}”

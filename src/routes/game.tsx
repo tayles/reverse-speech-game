@@ -1,7 +1,13 @@
-import { useCallback, useMemo, useState } from 'react'
 import { createRoute, useNavigate, Link } from '@tanstack/react-router'
 import { X, Trophy, ChevronLeft } from 'lucide-react'
-import { Route as rootRoute } from './__root'
+import { useCallback, useMemo, useState } from 'react'
+
+import { ListenStep } from '@/components/game/listen-step'
+import { RecordPhraseStep } from '@/components/game/record-phrase-step'
+import { RevealStep } from '@/components/game/reveal-step'
+import { RoundSummary } from '@/components/game/round-summary'
+import { Scoreboard } from '@/components/game/scoreboard'
+import type { RecordingResult } from '@/components/record-button'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,14 +18,10 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog'
-import { RecordPhraseStep } from '@/components/game/record-phrase-step'
-import { ListenStep } from '@/components/game/listen-step'
-import { RevealStep } from '@/components/game/reveal-step'
-import { RoundSummary } from '@/components/game/round-summary'
-import { Scoreboard } from '@/components/game/scoreboard'
-import { useGameStore, roundTurn, nextMaster, type Game, type Round } from '@/store/game-store'
 import { saveClip } from '@/lib/clips'
-import type { RecordingResult } from '@/components/record-button'
+import { useGameStore, roundTurn, nextMaster, type Game, type Round } from '@/store/game-store'
+
+import { Route as rootRoute } from './__root'
 
 type Phase =
   | { kind: 'record-phrase' }
@@ -61,16 +63,17 @@ function GamePage() {
   const [confirmExit, setConfirmExit] = useState(false)
 
   const round: Round | undefined = useMemo(() => {
-    if (!game || phase.kind === 'record-phrase') return undefined
+    if (!game || phase.kind === 'record-phrase') return
     return game.rounds.find((r) => r.id === phase.roundId)
   }, [game, phase])
 
-  const roundNumber = round
-    ? game.rounds.findIndex((r) => r.id === round.id) + 1
-    : (game?.rounds.length ?? 0) + 1
+  const roundNumber =
+    round && game
+      ? game.rounds.findIndex((r) => r.id === round.id) + 1
+      : (game?.rounds.length ?? 0) + 1
 
   const master = useMemo(() => {
-    if (!game) return undefined
+    if (!game) return
     if (round) return game.players.find((p) => p.id === round.masterId)
     return nextMaster(game)
   }, [game, round])
@@ -81,7 +84,7 @@ function GamePage() {
   )
 
   const recordingPlayer = useMemo(() => {
-    if (!game || phase.kind !== 'listen') return undefined
+    if (!game || phase.kind !== 'listen') return
     if (phase.retryFor) return game.players.find((p) => p.id === phase.retryFor)
     return turn?.current
   }, [game, phase, turn])
@@ -158,7 +161,7 @@ function GamePage() {
           <X />
         </Button>
         <div className="text-center">
-          <p className="text-sm font-extrabold uppercase tracking-widest text-white/40">
+          <p className="text-sm font-extrabold tracking-widest text-white/40 uppercase">
             {game.name}
           </p>
           <p className="text-base font-bold text-white/60">

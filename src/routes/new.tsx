@@ -1,22 +1,24 @@
-import { useEffect, useRef, useState } from 'react'
 import { createRoute, useNavigate } from '@tanstack/react-router'
 import { Check, Pencil, Plus, Rocket, Trash2, Users } from 'lucide-react'
-import { Route as rootRoute } from './__root'
+import { useEffect, useRef, useState } from 'react'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
-import { useGameStore } from '@/store/game-store'
 import { AVATARS, COLOURS, SOLO_PLAYER } from '@/data/players'
 import { unlockAudio } from '@/lib/audio'
 import { cn } from '@/lib/utils'
+import { useGameStore } from '@/store/game-store'
+
+import { Route as rootRoute } from './__root'
 
 const MIN_PLAYERS = 1
 const MAX_PLAYERS = 8
 
 /** Avatars and colours come from the seat; only the name is anybody's business. */
-const avatarFor = (index: number) => AVATARS[index % AVATARS.length]
-const colourFor = (index: number) => COLOURS[index % COLOURS.length]
+const avatarFor = (index: number) => AVATARS[index % AVATARS.length] ?? AVATARS[0]
+const colourFor = (index: number) => COLOURS[index % COLOURS.length] ?? COLOURS[0]
 
 /** A lone player is "Me", matching the solo game the home screen makes. */
 const defaultName = (index: number, count: number) =>
@@ -41,7 +43,7 @@ function NewGamePage() {
   const setName = (index: number, value: string) =>
     setNames((current) => current.map((name, i) => (i === index ? value : name)))
 
-  const nameFor = (index: number) => names[index].trim() || defaultName(index, count)
+  const nameFor = (index: number) => names[index]?.trim() || defaultName(index, count)
 
   /** Open the name fields with the caret already in the one you asked for. */
   const beginEdit = (index: number) => {
@@ -120,7 +122,7 @@ function NewGamePage() {
             min={MIN_PLAYERS}
             max={MAX_PLAYERS}
             step={1}
-            onValueChange={([next]) => setCount(next)}
+            onValueChange={([next]) => setCount(next ?? MIN_PLAYERS)}
           />
 
           <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
@@ -148,7 +150,9 @@ function NewGamePage() {
                       maxLength={14}
                       placeholder={defaultName(i, count)}
                       onChange={(e) => setName(i, e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && setEditing(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') setEditing(false)
+                      }}
                       aria-label={`Name for player ${i + 1}`}
                       className="h-10 w-32 rounded-xl px-3 text-base"
                     />
@@ -170,7 +174,7 @@ function NewGamePage() {
                 <span
                   key={i}
                   className={cn(
-                    'group relative flex min-w-28 items-center rounded-2xl py-2 pl-2 pr-3.5 text-base font-extrabold ring-1 transition-colors',
+                    'group relative flex min-w-28 items-center rounded-2xl py-2 pr-3.5 pl-2 text-base font-extrabold ring-1 transition-colors',
                     open
                       ? 'bg-white/12 ring-white/25'
                       : 'bg-white/8 ring-white/12 hover:bg-white/12',
@@ -181,7 +185,7 @@ function NewGamePage() {
                     onClick={() => setSelected(open ? null : i)}
                     aria-expanded={open}
                     aria-label={`${nameFor(i)} — rename or remove`}
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+                    className="flex min-w-0 flex-1 items-center gap-2 rounded-xl focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:outline-none"
                   >
                     <span
                       className="grid size-8 shrink-0 place-items-center rounded-lg text-lg"

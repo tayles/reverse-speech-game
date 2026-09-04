@@ -30,7 +30,7 @@ function pickMimeType(): string | undefined {
 export function isRecordingSupported(): boolean {
   return (
     typeof navigator !== 'undefined' &&
-    !!navigator.mediaDevices?.getUserMedia &&
+    typeof navigator.mediaDevices?.getUserMedia === 'function' &&
     typeof MediaRecorder !== 'undefined'
   )
 }
@@ -87,7 +87,7 @@ export async function startRecording(): Promise<RecorderHandle> {
       analyser.getByteTimeDomainData(bins)
       let peak = 0
       for (let i = 0; i < bins.length; i++) {
-        const v = Math.abs(bins[i] - 128) / 128
+        const v = Math.abs((bins[i] ?? 128) - 128) / 128
         if (v > peak) peak = v
       }
       return Math.min(1, peak * 2.2)
@@ -106,8 +106,8 @@ export async function startRecording(): Promise<RecorderHandle> {
           teardown()
           reject(new Error('Recording failed'))
         }
-        if (recorder.state !== 'inactive') recorder.stop()
-        else recorder.onstop?.(new Event('stop'))
+        if (recorder.state === 'inactive') recorder.onstop?.(new Event('stop'))
+        else recorder.stop()
       })
     },
     cancel: teardown,

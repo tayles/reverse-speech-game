@@ -1,6 +1,6 @@
+import type { ProcessedClip } from './audio'
 import { putAudio, type StoredAudio } from './db'
 import { uid } from './utils'
-import type { ProcessedClip } from './audio'
 
 /** Persist a freshly processed recording and return its IndexedDB key. */
 export async function saveClip(processed: ProcessedClip): Promise<StoredAudio> {

@@ -1,14 +1,16 @@
 import { createRoute, useNavigate, Link } from '@tanstack/react-router'
 import { Play, Users, User, Trash2, Trophy } from 'lucide-react'
-import { Route as rootRoute } from './__root'
+
+import micBadge from '@/assets/mic-badge.png'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { useGameStore, leaderboard } from '@/store/game-store'
 import { SOLO_PLAYER } from '@/data/players'
-import { formatDate } from '@/lib/utils'
 import { unlockAudio } from '@/lib/audio'
-import micBadge from '@/assets/mic-badge.png'
+import { formatDate, isDefined } from '@/lib/utils'
+import { useGameStore, leaderboard } from '@/store/game-store'
+
+import { Route as rootRoute } from './__root'
 
 const STEPS = [
   {
@@ -42,7 +44,7 @@ function HomePage() {
 
   const recent = gameOrder
     .map((id) => games[id])
-    .filter(Boolean)
+    .filter(isDefined)
     .slice(0, 6)
   const active = recent.find((g) => g.status === 'active' && g.rounds.length > 0)
 
@@ -60,7 +62,7 @@ function HomePage() {
           alt=""
           className="mx-auto h-28 w-auto animate-float drop-shadow-2xl sm:h-36"
         />
-        <h1 className="mt-3 text-4xl font-extrabold leading-none tracking-tight sm:text-5xl">
+        <h1 className="mt-3 text-4xl leading-none font-extrabold tracking-tight sm:text-5xl">
           Can you talk backwards?
         </h1>
         <p className="mx-auto mt-3 max-w-md text-lg font-bold text-white/70">
@@ -138,7 +140,7 @@ function HomePage() {
                     <Link
                       to="/game/$gameId"
                       params={{ gameId: game.id }}
-                      className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+                      className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:outline-none"
                     >
                       <span
                         className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-2xl"

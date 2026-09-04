@@ -1,11 +1,11 @@
 import { Mic, Repeat, Flag } from 'lucide-react'
+
+import { PlayerChip } from '@/components/player-chip'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Waveform } from '@/components/waveform'
-import { PlayerChip } from '@/components/player-chip'
-import { Scoreboard } from './scoreboard'
 import { useClip } from '@/components/use-clip'
+import { Waveform } from '@/components/waveform'
 import { cn } from '@/lib/utils'
 import {
   attemptsBy,
@@ -15,6 +15,8 @@ import {
   type Player,
   type Round,
 } from '@/store/game-store'
+
+import { Scoreboard } from './scoreboard'
 
 function AttemptRow({
   attempt,
@@ -104,7 +106,7 @@ export function RoundSummary({ game, round, roundNumber, onNextRound, onFinish }
           🎊
         </p>
         <h2 className="mt-1 text-3xl font-extrabold tracking-tight">Round {roundNumber} done!</h2>
-        {bestPlayer && best.points > 0 && (
+        {bestPlayer && best && best.points > 0 && (
           <p className="mt-1 text-lg font-bold text-white/60">
             {solo ? (
               <>
